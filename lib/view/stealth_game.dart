@@ -1,23 +1,32 @@
 import 'package:between_the_lines/model/entities/character.dart';
-import 'package:between_the_lines/model/entities/enemy.dart';
 import 'package:between_the_lines/model/game_state.dart';
 import 'package:between_the_lines/model/grid/grid_coordinate.dart';
-import 'package:between_the_lines/model/grid/hex_grid.dart';
+import 'package:between_the_lines/model/level_data.dart';
 import 'package:between_the_lines/model/systems/movement_calculator.dart';
 import 'package:between_the_lines/model/systems/vision_calculator.dart';
 import 'package:between_the_lines/view/components/character_component.dart';
 import 'package:between_the_lines/view/components/enemy_component.dart';
 import 'package:between_the_lines/view/components/goal_indicator_component.dart';
 import 'package:between_the_lines/view/components/hex_tile.dart';
+import 'package:between_the_lines/view/components/level_view_component.dart';
 import 'package:between_the_lines/view/components/patrol_path_component.dart';
 import 'package:between_the_lines/view/utils/hex_math.dart';
+import 'package:between_the_lines/model/grid/hex_grid.dart';
+import 'package:flame/components.dart';
+import 'package:flame/effects.dart';
 import 'package:flame/game.dart';
+import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
 
 class StealthGame extends FlameGame {
   late GameState gameState;
 
-  // Component references
+  // Level tracking
+  int _currentLevelIndex = 0;
+  LevelViewComponent? _currentLevelView;
+  late TextComponent _levelCounter;
+
+  // Component references (for the active level)
   final Map<GridCoordinate, HexTile> _tileComponents = {};
   final List<CharacterComponent> _characterComponents = [];
   final List<EnemyComponent> _enemyComponents = [];
@@ -34,213 +43,146 @@ class StealthGame extends FlameGame {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    _initializeMockLevel();
-    _buildWorld();
+    _initializeLevel(_currentLevelIndex);
+    _buildInitialWorld();
+    _setupUI();
+  }
+
+  void _setupUI() {
+    _levelCounter = TextComponent(
+      text: 'Level ${_currentLevelIndex + 1}',
+      position: Vector2(20, 20),
+      textRenderer: TextPaint(
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+    camera.viewport.add(_levelCounter);
+
+    // Debug Button
+    final debugButton = ButtonComponent(
+      button: TextComponent(
+        text: 'DEBUG WIN',
+        textRenderer: TextPaint(
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      position: Vector2(20, 60),
+      onPressed: _debugWin,
+    );
+    camera.viewport.add(debugButton);
+  }
+
+  void _debugWin() {
+    if (gameState.status != GameStatus.playing) return;
+
+    // Teleport all characters to row 0
+    for (final char in gameState.characters) {
+      // col = q + r/2
+      final col = char.position.q + (char.position.r / 2).floor();
+      char.position = GridCoordinate(col, 0);
+    }
+
+    for (final cc in _characterComponents) {
+      cc.syncWithModel();
+    }
+
+    // Trigger win check
+    gameState.status = GameStatus.won;
+    _transitionToNextLevel();
   }
 
   // ── Level Setup ──
 
-  void _initializeMockLevel() {
-    // 6 columns, 12 rows for a vertical feel
-    final grid = HexGrid.rectangle(6, 12);
+  void _initializeLevel(int index) {
+    final data = levelsRepository[index];
+    final grid = data.createGrid();
 
-    // Target zones at the VERY TOP (row 0)
-    for (var c = 0; c < 6; c++) {
-      final q = c - (0 / 2).floor();
-      grid.setTileType(GridCoordinate(q, 0), TileType.targetZone);
+    // Player characters
+    List<Character> characters;
+    if (_currentLevelIndex == 0) {
+      // Start at the bottom for the first level (row 12 for a 13-row grid)
+      characters = [
+        Character(
+          id: 'c1',
+          position: GridCoordinate(2 - (12 / 2).floor(), 12),
+        ),
+        Character(
+          id: 'c2',
+          position: GridCoordinate(3 - (12 / 2).floor(), 12),
+        ),
+      ];
+    } else {
+      // Retain positions from previous level (already updated in transition)
+      characters = gameState.characters;
     }
-
-    // Obstacles creating corridors in the middle
-    grid.setTileType(GridCoordinate(0 - (4 / 2).floor(), 4), TileType.blocked);
-    grid.setTileType(GridCoordinate(1 - (4 / 2).floor(), 4), TileType.blocked);
-    grid.setTileType(GridCoordinate(4 - (4 / 2).floor(), 4), TileType.blocked);
-    grid.setTileType(GridCoordinate(5 - (4 / 2).floor(), 4), TileType.blocked);
-
-    grid.setTileType(GridCoordinate(2 - (7 / 2).floor(), 7), TileType.blocked);
-    grid.setTileType(GridCoordinate(3 - (7 / 2).floor(), 7), TileType.blocked);
-
-    // Player characters at the BOTTOM (row 11)
-    final c1 = Character(
-      id: 'c1',
-      position: GridCoordinate(2 - (11 / 2).floor(), 11),
-    );
-    final c2 = Character(
-      id: 'c2',
-      position: GridCoordinate(3 - (11 / 2).floor(), 11),
-    );
-
-    // Enemies in the middle
-    final e1 = Enemy(
-      id: 'e1',
-      position: GridCoordinate(0 - (6 / 2).floor(), 6),
-      patrolPath: [
-        GridCoordinate(0 - (6 / 2).floor(), 6),
-        GridCoordinate(5 - (6 / 2).floor(), 6),
-      ],
-      visionRange: 3,
-    );
-    final e2 = Enemy(
-      id: 'e2',
-      position: GridCoordinate(5 - (3 / 2).floor(), 3),
-      patrolPath: [
-        GridCoordinate(5 - (3 / 2).floor(), 3),
-        GridCoordinate(0 - (3 / 2).floor(), 3),
-      ],
-      enemyType: EnemyType.linear,
-    );
-    final e3 = Enemy(
-      id: 'e3',
-      position: GridCoordinate(2 - (9 / 2).floor(), 9),
-      patrolPath: [
-        GridCoordinate(2 - (9 / 2).floor(), 9),
-        GridCoordinate(3 - (9 / 2).floor(), 9),
-      ],
-      visionRange: 2,
-      enemyType: EnemyType.radial,
-    );
 
     gameState = GameState(
       grid: grid,
-      characters: [c1, c2], // Added second character
-      enemies: [e1, e2, e3],
+      characters: characters,
+      enemies: data.enemies,
     );
 
-    // Compute tile-by-tile patrol routes
     for (final enemy in gameState.enemies) {
       enemy.initializePath(grid);
     }
   }
 
-  // Shadow old logic till next method
-  /*
-  void _oldInitialize() {
-
-    // Target zones at the TOP (negative r = top in pointy-top hex)
-    grid.setTileType(
-      const GridCoordinate(0, -4),
-      TileType.targetZone,
-    );
-    grid.setTileType(
-      const GridCoordinate(1, -4),
-      TileType.targetZone,
-    );
-    grid.setTileType(
-      const GridCoordinate(-1, -3),
-      TileType.targetZone,
-    );
-
-    // Obstacles in the middle creating corridors
-    grid.setTileType(
-      const GridCoordinate(-2, 0),
-      TileType.blocked,
-    );
-    grid.setTileType(
-      const GridCoordinate(2, -1),
-      TileType.blocked,
-    );
-    grid.setTileType(
-      const GridCoordinate(0, -1),
-      TileType.blocked,
-    );
-
-    // Player starts at the BOTTOM (positive r)
-    final c1 = Character(
-      id: 'c1',
-      position: const GridCoordinate(0, 3),
-    );
-
-    // Enemies patrol across the middle
-    final e1 = Enemy(
-      id: 'e1',
-      position: const GridCoordinate(-2, 1),
-      patrolPath: [
-        const GridCoordinate(-2, 1),
-        const GridCoordinate(2, -1),
-      ],
-      visionRange: 3,
-    );
-    final e2 = Enemy(
-      id: 'e2',
-      position: const GridCoordinate(2, 0),
-      patrolPath: [
-        const GridCoordinate(2, 0),
-        const GridCoordinate(-2, 2),
-      ],
-      facing: Direction.left,
-      enemyType: EnemyType.linear,
-    );
-    final e3 = Enemy(
-      id: 'e3',
-      position: const GridCoordinate(0, -2),
-      patrolPath: [
-        const GridCoordinate(0, -2),
-        const GridCoordinate(1, -2),
-      ],
-      visionRange: 2,
-      enemyType: EnemyType.radial,
-    );
-
-  */
-
   // ── World Construction ──
 
-  Future<void> _buildWorld() async {
-    // 1. Add hex tiles in a rectangular grid
-    final w = gameState.grid.width;
-    final h = gameState.grid.height;
+  LevelViewComponent _createLevelView(GameState state) {
+    final tiles = <HexTile>[];
+    final enemyComps = <EnemyComponent>[];
+    final paths = <PatrolPathComponent>[];
 
-    // Bounds for camera centering
-    var minX = double.infinity;
-    var maxX = double.negativeInfinity;
-    var minY = double.infinity;
-    var maxY = double.negativeInfinity;
+    _tileComponents.clear();
+    _enemyComponents.clear();
+
+    final w = state.grid.width;
+    final h = state.grid.height;
 
     for (var r = 0; r < h; r++) {
       for (var c = 0; c < w; c++) {
         final q = c - (r / 2).floor();
         final coord = GridCoordinate(q, r);
-        final type = gameState.grid.getTileType(coord);
+        final type = state.grid.getTileType(coord);
 
         final tile = HexTile(
           coordinate: coord,
           type: type,
         );
         _tileComponents[coord] = tile;
-        world.add(tile);
-
-        // Update bounds for camera
-        final screenPos = HexMath.gridToScreen(coord);
-        if (screenPos.x < minX) {
-          minX = screenPos.x;
-        }
-        if (screenPos.x > maxX) {
-          maxX = screenPos.x;
-        }
-        if (screenPos.y < minY) {
-          minY = screenPos.y;
-        }
-        if (screenPos.y > maxY) {
-          maxY = screenPos.y;
-        }
+        tiles.add(tile);
       }
     }
 
-    // 2. Add patrol path arrows (ON TOP of tiles)
-    for (final enemy in gameState.enemies) {
-      final patrol = PatrolPathComponent(
-        enemy: enemy,
-      );
-      world.add(patrol);
-    }
-
-    // 3. Add enemies
-    for (final enemy in gameState.enemies) {
+    for (final enemy in state.enemies) {
+      paths.add(PatrolPathComponent(enemy: enemy));
       final ec = EnemyComponent(model: enemy);
       _enemyComponents.add(ec);
-      world.add(ec);
+      enemyComps.add(ec);
     }
 
-    // 4. Add characters
+    return LevelViewComponent(
+      tiles: tiles,
+      enemies: enemyComps,
+      patrolPaths: paths,
+    )..priority = 0; // Explicitly set priority
+  }
+
+  Future<void> _buildInitialWorld() async {
+    _currentLevelView = _createLevelView(gameState);
+    world.add(_currentLevelView!);
+
+    // Add characters globally to world so they don't slide with levels automatically
+    // unless we want them to (but the user said "maps slide down", implying characters stay)
     for (final char in gameState.characters) {
       final cc = CharacterComponent(
         model: char,
@@ -248,116 +190,178 @@ class StealthGame extends FlameGame {
         onDragUpdateCallback: _onCharacterDragUpdate,
         onDragEndCallback: _onCharacterDragEnd,
       );
+      cc.priority = 10; // Ensure characters are on top
       _characterComponents.add(cc);
       world.add(cc);
     }
 
-    // Initial highlights
     _updateEnemyVisionHighlights();
+    _fitCamera();
+  }
 
-    // 5. Fit camera to map
-    // Add some padding
-    const padding = 64.0;
-    final mapWidth = (maxX - minX) + padding * 2;
-    final mapHeight = (maxY - minY) + padding * 2;
+  void _fitCamera() {
+    // 13-row grid bounding box:
+    // Left edge ~ -28, Right edge ~ 305 -> Width ~ 333
+    // Top edge ~ -32, Bottom edge ~ 608 -> Height ~ 640
+    // Center ~ Vector2(138.5, 288)
 
-    // Center camera on the map
-    camera.viewfinder.position = Vector2((minX + maxX) / 2, (minY + maxY) / 2);
+    camera.viewfinder.position = Vector2(138.5, 288);
+    camera.viewfinder.zoom = 1.0;
 
-    // Calculate zoom to fill screen (canvasSize might not be ready in onLoad,
-    // but building world happens after. However, better to use a ResizeEffect or update later)
-    // For now, let's just set a reasonable zoom or try to use canvasSize if available
     if (size.x > 0 && size.y > 0) {
-      final zoomX = size.x / mapWidth;
-      final zoomY = size.y / mapHeight;
-      camera.viewfinder.zoom = zoomX < zoomY ? zoomX : zoomY;
+      // Calculate zoom to fit the grid with some padding
+      final zoomX = size.x / 360; // 333 + 27 padding
+      final zoomY = size.y / 680; // 640 + 40 padding
+      camera.viewfinder.zoom = (zoomX < zoomY ? zoomX : zoomY).clamp(0.5, 2.0);
     }
   }
 
   // ── Interaction Logic ──
 
   void _onCharacterDragStart(CharacterComponent cc) {
-    if (gameState.status != GameStatus.playing) {
-      return;
-    }
+    if (gameState.status != GameStatus.playing) return;
 
     _draggedCharacter = cc;
-
-    // Calculate reachable tiles
     _currentReachableTiles = MovementCalculator.calculateReachableTiles(
       gameState.grid,
       cc.model,
     );
 
-    // Highlight reachable tiles (blue)
     for (final coord in _currentReachableTiles) {
       _tileComponents[coord]?.highlightColors.add(Colors.blue);
     }
-
-    // Spawn "!" on reachable goal tiles
     _spawnGoalIndicators();
   }
 
-  void _onCharacterDragUpdate(CharacterComponent cc) {
-    // Visual drag handled in CharacterComponent
-  }
+  void _onCharacterDragUpdate(CharacterComponent cc) {}
 
   void _onCharacterDragEnd(CharacterComponent cc) {
-    if (_draggedCharacter == null) {
-      return;
-    }
+    if (_draggedCharacter == null) return;
 
-    final dropPos = HexMath.screenToGrid(cc.position);
+    // Adjust drop position based on level view offset if needed
+    // Actually HexMath handles absolute world coordinates, and tiles are relative to LevelView.
+    // So we need to subtract LevelView position from world position to get local...
+    // OR just use the tile components to find the closest one.
 
-    // Clear blue highlights
+    final worldPos = cc.position;
+    final localPos = worldPos - _currentLevelView!.position;
+    final dropPos = HexMath.screenToGrid(localPos);
+
     for (final coord in _currentReachableTiles) {
-      _tileComponents[coord]?.highlightColors.remove(
-            Colors.blue,
-          );
+      _tileComponents[coord]?.highlightColors.remove(Colors.blue);
     }
-
-    // Remove goal indicators
     _removeGoalIndicators();
 
-    // Turn skip: only consume turn if actually moved
     final didMove = _currentReachableTiles.contains(dropPos) && dropPos != cc.model.position;
 
     if (didMove) {
-      // Valid move! Update model
       cc.model.position = dropPos;
-      cc.model.hasMoved = true; // Mark as moved
+      cc.model.hasMoved = true;
       cc.syncWithModel();
 
-      // Check if ALL characters have moved
       final allMoved = gameState.characters.every((c) => c.hasMoved);
 
       if (allMoved) {
-        // End turn → enemies move
         gameState.endTurn();
-
-        // Animate enemies to new positions
         _clearEnemyVisionHighlights();
         for (final ec in _enemyComponents) {
           ec.animateToModel();
         }
         _updateEnemyVisionHighlights();
       } else {
-        // Just update vision highlights showing current status
         _updateEnemyVisionHighlights();
       }
 
-      if (gameState.status != GameStatus.playing) {
-        debugPrint(
-          'GAME OVER: ${gameState.statusMessage}',
-        );
+      if (gameState.status == GameStatus.won) {
+        _transitionToNextLevel();
+      } else if (gameState.status == GameStatus.lost) {
+        debugPrint('GAME OVER: ${gameState.statusMessage}');
       }
     } else {
-      // No move or invalid → snap back
       cc.syncWithModel();
     }
 
     _draggedCharacter = null;
     _currentReachableTiles.clear();
+  }
+
+  // ── Transition Logic ──
+
+  Future<void> _transitionToNextLevel() async {
+    if (_currentLevelIndex + 1 >= levelsRepository.length) {
+      debugPrint('ALL LEVELS CLEARED!');
+      return;
+    }
+
+    final oldLevelView = _currentLevelView!;
+    _currentLevelIndex++;
+
+    // 1. Prepare next level data
+    _initializeLevel(_currentLevelIndex);
+
+    // 2. Create next level view
+    final nextLevelView = _createLevelView(gameState);
+
+    // 3. Animate sliding
+    const duration = 1.5;
+    const curve = Curves.easeInOutCubic;
+
+    // Perfect alignment offset calculation
+    // Logical column 0 at row 12 is GridCoordinate(-6, 12) due to axial offset: q = col - floor(r/2)
+    // Logical column 0 at row 0 is GridCoordinate(0, 0)
+    // We want these two to align vertically.
+    final row12Pos = HexMath.gridToScreen(const GridCoordinate(-6, 12));
+    final row0Pos = HexMath.gridToScreen(const GridCoordinate(0, 0));
+    final offset = row12Pos - row0Pos;
+
+    nextLevelView.position = oldLevelView.position - offset;
+    world.add(nextLevelView);
+    _currentLevelView = nextLevelView;
+
+    // Temporary lock interaction
+    final originalStatus = gameState.status;
+    gameState.status = GameStatus.lost;
+
+    oldLevelView.add(
+      MoveByEffect(
+        offset,
+        EffectController(duration: duration, curve: curve),
+        onComplete: oldLevelView.removeFromParent,
+      ),
+    );
+
+    nextLevelView.add(
+      MoveByEffect(
+        offset,
+        EffectController(duration: duration, curve: curve),
+        onComplete: () {
+          // NOW update model position to match visual result
+          for (final char in gameState.characters) {
+            // column = q + floor(r/2). At r=0, column=q.
+            // We want to map this directly to Row 12 start zone: q = column - floor(12/2) = column - 6
+            final column = char.position.q;
+            char.position = GridCoordinate(column - 6, 12);
+          }
+          for (final cc in _characterComponents) {
+            cc.syncWithModel();
+          }
+
+          gameState.status = originalStatus == GameStatus.won ? GameStatus.playing : originalStatus;
+          _updateEnemyVisionHighlights();
+        },
+      ),
+    );
+
+    for (final cc in _characterComponents) {
+      cc.add(
+        MoveByEffect(
+          offset,
+          EffectController(duration: duration, curve: curve),
+        ),
+      );
+    }
+
+    _levelCounter.text = 'Level ${_currentLevelIndex + 1}';
   }
 
   // ── Highlighting ──
@@ -371,14 +375,9 @@ class StealthGame extends FlameGame {
   void _updateEnemyVisionHighlights() {
     _clearEnemyVisionHighlights();
     for (final enemy in gameState.enemies) {
-      final vision = VisionCalculator.calculateVision(
-        gameState.grid,
-        enemy,
-      );
+      final vision = VisionCalculator.calculateVision(gameState.grid, enemy);
       for (final coord in vision) {
-        _tileComponents[coord]?.highlightColors.add(
-              Colors.red,
-            );
+        _tileComponents[coord]?.highlightColors.add(Colors.red);
       }
     }
   }
@@ -393,7 +392,9 @@ class StealthGame extends FlameGame {
           tileCenter: HexMath.gridToScreen(coord),
         );
         _goalIndicators.add(indicator);
-        world.add(indicator);
+        // Add to level view so it moves with it during transition if active?
+        // Actually goal indicators are only active during drag.
+        _currentLevelView!.add(indicator);
       }
     }
   }
