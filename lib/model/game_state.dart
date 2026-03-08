@@ -46,10 +46,10 @@ class GameState {
       enemy.advancePatrol();
     }
 
-    _checkWinLossConditions();
+    updateStatus();
   }
 
-  void _checkWinLossConditions() {
+  void updateStatus() {
     // Check Loss (if any character is in any enemy's vision)
     for (final enemy in enemies) {
       final visibleTiles = VisionCalculator.calculateVision(grid, enemy);

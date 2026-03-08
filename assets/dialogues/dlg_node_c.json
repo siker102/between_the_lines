@@ -1,0 +1,7 @@
+﻿{
+  "id": "dlg_node_c",
+  "lines": [
+    { "speakerId": "narrator", "text": "Victory Mansions. The name mocks its crumbling facade." },
+    { "speakerId": "c1", "text": "The diary... it's here. Hidden between the floor and the telescreen's blind spot." }
+  ]
+}

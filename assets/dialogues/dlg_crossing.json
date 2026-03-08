@@ -1,0 +1,21 @@
+{
+    "id": "dlg_crossing",
+    "lines": [
+        {
+            "speakerId": "c2",
+            "text": "We made it past the first patrol. Good."
+        },
+        {
+            "speakerId": "c1",
+            "text": "That was... intense. Are there more?"
+        },
+        {
+            "speakerId": "c2",
+            "text": "Always. But the further we get, the closer we are to safety."
+        },
+        {
+            "speakerId": "c1",
+            "text": "Then let's keep moving."
+        }
+    ]
+}

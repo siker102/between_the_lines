@@ -2,19 +2,67 @@ import 'package:between_the_lines/model/entities/enemy.dart';
 import 'package:between_the_lines/model/grid/grid_coordinate.dart';
 import 'package:between_the_lines/model/grid/hex_grid.dart';
 
-class LevelData {
+/// Describes a single stage within a level: grid dimensions, obstacles, and enemies.
+class StageData {
   final int width;
   final int height;
   final Map<GridCoordinate, TileType> specialTiles;
   final List<Enemy> enemies;
 
-  LevelData({
+  StageData({
     required this.width,
     required this.height,
     this.specialTiles = const {},
     this.enemies = const [],
   });
 
+  /// Deserialises a stage from a JSON map.
+  ///
+  /// Expected shape:
+  /// ```json
+  /// {
+  ///   "width": 6,
+  ///   "height": 13,
+  ///   "blockedTiles": [[col, row], ...],
+  ///   "enemies": [ { "id": "...", "position": [col, row], ... } ]
+  /// }
+  /// ```
+  factory StageData.fromJson(Map<String, dynamic> json) {
+    final width = json['width'] as int;
+    final height = json['height'] as int;
+
+    // Parse blocked tiles (offset [col, row] → axial GridCoordinate)
+    final specialTiles = <GridCoordinate, TileType>{};
+    if (json['blockedTiles'] != null) {
+      for (final tile in json['blockedTiles'] as List) {
+        final pair = tile as List;
+        final col = pair[0] as int;
+        final row = pair[1] as int;
+        final q = col - (row / 2).floor();
+        specialTiles[GridCoordinate(q, row)] = TileType.blocked;
+      }
+    }
+
+    // Parse enemies
+    final enemies = <Enemy>[];
+    if (json['enemies'] != null) {
+      for (final e in json['enemies'] as List) {
+        enemies.add(_enemyFromJson(e as Map<String, dynamic>));
+      }
+    }
+
+    return StageData(
+      width: width,
+      height: height,
+      specialTiles: specialTiles,
+      enemies: enemies,
+    );
+  }
+
+  /// Returns fresh clones of this stage's enemy templates.
+  List<Enemy> createEnemies() => enemies.map((e) => e.clone()).toList();
+
+  /// Creates a [HexGrid] from this stage's data, including target zones at row 0.
   HexGrid createGrid() {
     final grid = HexGrid.rectangle(width, height);
 
@@ -28,74 +76,49 @@ class LevelData {
 
     return grid;
   }
+
+  static Enemy _enemyFromJson(Map<String, dynamic> json) {
+    final pos = json['position'] as List;
+    final posCol = pos[0] as int;
+    final posRow = pos[1] as int;
+
+    final patrolPath = <GridCoordinate>[];
+    for (final wp in json['patrolPath'] as List) {
+      final pair = wp as List;
+      final c = pair[0] as int;
+      final r = pair[1] as int;
+      patrolPath.add(GridCoordinate(c - (r / 2).floor(), r));
+    }
+
+    final typeStr = json['enemyType'] as String? ?? 'directional';
+    final enemyType = EnemyType.values.firstWhere(
+      (t) => t.name == typeStr,
+      orElse: () => EnemyType.directional,
+    );
+
+    return Enemy(
+      id: json['id'] as String,
+      position: GridCoordinate(posCol - (posRow / 2).floor(), posRow),
+      patrolPath: patrolPath,
+      visionRange: json['visionRange'] as int? ?? 4,
+      enemyType: enemyType,
+    );
+  }
 }
 
-final List<LevelData> levelsRepository = [
-  // Level 1
-  LevelData(
-    width: 6,
-    height: 13,
-    specialTiles: {
-      GridCoordinate(0 - (4 / 2).floor(), 4): TileType.blocked,
-      GridCoordinate(1 - (4 / 2).floor(), 4): TileType.blocked,
-      GridCoordinate(4 - (4 / 2).floor(), 4): TileType.blocked,
-      GridCoordinate(5 - (4 / 2).floor(), 4): TileType.blocked,
-      GridCoordinate(2 - (7 / 2).floor(), 7): TileType.blocked,
-      GridCoordinate(3 - (7 / 2).floor(), 7): TileType.blocked,
-    },
-    enemies: [
-      Enemy(
-        id: 'e1_l1',
-        position: GridCoordinate(0 - (6 / 2).floor(), 6),
-        patrolPath: [
-          GridCoordinate(0 - (6 / 2).floor(), 6),
-          GridCoordinate(5 - (6 / 2).floor(), 6),
-        ],
-        visionRange: 3,
-      ),
-      Enemy(
-        id: 'e2_l1',
-        position: GridCoordinate(5 - (3 / 2).floor(), 3),
-        patrolPath: [
-          GridCoordinate(5 - (3 / 2).floor(), 3),
-          GridCoordinate(0 - (3 / 2).floor(), 3),
-        ],
-        enemyType: EnemyType.linear,
-      ),
-      Enemy(
-        id: 'e3_l1',
-        position: GridCoordinate(2 - (9 / 2).floor(), 9),
-        patrolPath: [
-          GridCoordinate(2 - (9 / 2).floor(), 9),
-          GridCoordinate(3 - (9 / 2).floor(), 9),
-        ],
-        visionRange: 2,
-        enemyType: EnemyType.radial,
-      ),
-    ],
-  ),
-  // Level 2
-  LevelData(
-    width: 6,
-    height: 13,
-    specialTiles: {
-      GridCoordinate(1 - (3 / 2).floor(), 3): TileType.blocked,
-      GridCoordinate(2 - (3 / 2).floor(), 3): TileType.blocked,
-      GridCoordinate(3 - (3 / 2).floor(), 3): TileType.blocked,
-      GridCoordinate(4 - (3 / 2).floor(), 3): TileType.blocked,
-      GridCoordinate(0 - (8 / 2).floor(), 8): TileType.blocked,
-      GridCoordinate(5 - (8 / 2).floor(), 8): TileType.blocked,
-    },
-    enemies: [
-      Enemy(
-        id: 'e1_l2',
-        position: GridCoordinate(1 - (5 / 2).floor(), 5),
-        patrolPath: [
-          GridCoordinate(1 - (5 / 2).floor(), 5),
-          GridCoordinate(4 - (5 / 2).floor(), 5),
-        ],
-        visionRange: 3,
-      ),
-    ],
-  ),
-];
+/// A level is a named collection of stages.
+class LevelData {
+  final String name;
+  final List<StageData> stages;
+
+  LevelData({required this.name, required this.stages});
+
+  factory LevelData.fromJson(Map<String, dynamic> json) {
+    final stages = (json['stages'] as List).map((s) => StageData.fromJson(s as Map<String, dynamic>)).toList();
+
+    return LevelData(
+      name: json['name'] as String,
+      stages: stages,
+    );
+  }
+}

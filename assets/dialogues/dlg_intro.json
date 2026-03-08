@@ -1,0 +1,29 @@
+{
+    "id": "dlg_intro",
+    "lines": [
+        {
+            "speakerId": "narrator",
+            "text": "A cold breeze cuts through the silence..."
+        },
+        {
+            "speakerId": "c2",
+            "text": "Hey... wake up. We need to move."
+        },
+        {
+            "speakerId": "c1",
+            "text": "Where... am I? What happened?"
+        },
+        {
+            "speakerId": "c2",
+            "text": "No time to explain. They're patrolling nearby."
+        },
+        {
+            "speakerId": "c1",
+            "text": "Who are 'they'?"
+        },
+        {
+            "speakerId": "c2",
+            "text": "Follow me. Stay low. I'll explain when we're safe."
+        }
+    ]
+}

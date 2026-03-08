@@ -89,14 +89,32 @@ class HexTile extends PositionComponent {
   }
 
   /// Blends all active highlight colors.
-  /// Special case: blue + red = purple.
+  /// Special cases:
+  /// - blue + red = purple (move range + enemy vision)
+  /// - dark blue + red = dark purple (blocked by ally + enemy vision)
+  /// - dark red (blocked by enemy)
   Color _blendHighlights() {
     final hasBlue = highlightColors.contains(Colors.blue);
     final hasRed = highlightColors.contains(Colors.red);
+    final hasDarkBlue = highlightColors.contains(Colors.blue.shade800);
+    final hasDarkRed = highlightColors.contains(Colors.red.shade800);
+
+    if (hasDarkRed) {
+      return Colors.red.shade900;
+    }
+
+    if (hasDarkBlue && hasRed) {
+      return Colors.purple.shade900;
+    }
+
+    if (hasDarkBlue) {
+      return Colors.blue.shade800;
+    }
 
     if (hasBlue && hasRed) {
       return Colors.purple;
     }
+
     // Average all colors if there are multiple non-standard ones
     if (highlightColors.length == 1) {
       return highlightColors.first;

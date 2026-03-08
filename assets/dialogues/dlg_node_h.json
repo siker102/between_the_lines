@@ -1,0 +1,7 @@
+﻿{
+  "id": "dlg_node_h",
+  "lines": [
+    { "speakerId": "c1", "text": "The passcode... it's split in two. This is the first half." },
+    { "speakerId": "c2", "text": "The second half is inside the Ministry. Of course it is." }
+  ]
+}

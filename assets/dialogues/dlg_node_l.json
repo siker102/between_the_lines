@@ -1,0 +1,8 @@
+﻿{
+  "id": "dlg_node_l",
+  "lines": [
+    { "speakerId": "narrator", "text": "The Central Chamber. The heart of it all." },
+    { "speakerId": "c1", "text": "The archive is here. Every truth they tried to erase." },
+    { "speakerId": "c2", "text": "Then let's make sure the world remembers." }
+  ]
+}

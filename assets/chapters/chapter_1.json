@@ -1,0 +1,253 @@
+{
+    "id": "chapter_1",
+    "title": "Between the Lines",
+    "chapterNumber": 1,
+    "startNodeId": "node_a",
+    "characters": {
+        "c1": {
+            "displayName": "Winston",
+            "fullBodyAsset": "assets/images/character_full_view/character1_fullportrait.png"
+        },
+        "c2": {
+            "displayName": "Julia",
+            "fullBodyAsset": "assets/images/character_full_view/character2_fullportrait.png"
+        },
+        "narrator": {
+            "displayName": "???",
+            "fullBodyAsset": ""
+        }
+    },
+    "districts": [
+        {
+            "id": "district_1",
+            "name": "The Outer Rim",
+            "subtitle": "The Prole Quarters",
+            "tier": 1,
+            "nodeIds": [
+                "node_a",
+                "node_b",
+                "node_c"
+            ],
+            "edgeIds": [
+                "path_ab",
+                "path_bc"
+            ],
+            "bossLevelAssetPath": "assets/levels/level_1.json",
+            "transitionDirection": [
+                0.0,
+                -1.0
+            ]
+        },
+        {
+            "id": "district_2",
+            "name": "The Industrial Sector",
+            "subtitle": "The Machinery of Control",
+            "tier": 2,
+            "nodeIds": [
+                "node_d",
+                "node_e",
+                "node_f"
+            ],
+            "edgeIds": [
+                "path_de",
+                "path_ef"
+            ],
+            "bossLevelAssetPath": "assets/levels/level_1.json",
+            "transitionDirection": [
+                1.0,
+                0.0
+            ]
+        },
+        {
+            "id": "district_3",
+            "name": "The Administrative Core",
+            "subtitle": "The Inner Party",
+            "tier": 3,
+            "nodeIds": [
+                "node_g",
+                "node_h",
+                "node_i"
+            ],
+            "edgeIds": [
+                "path_gh",
+                "path_hi"
+            ],
+            "bossLevelAssetPath": "assets/levels/level_1.json",
+            "transitionDirection": [
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "id": "district_4",
+            "name": "The Final Infiltration",
+            "subtitle": "The Heart of Big Brother",
+            "tier": 4,
+            "nodeIds": [
+                "node_j",
+                "node_k",
+                "node_l"
+            ],
+            "edgeIds": [
+                "path_jk",
+                "path_kl"
+            ]
+        }
+    ],
+    "nodes": [
+        {
+            "id": "node_a",
+            "label": "The Junk Shop",
+            "description": "Starting Point / Safehouse",
+            "x": 0.5,
+            "y": 0.85,
+            "dialogueId": "dlg_node_a"
+        },
+        {
+            "id": "node_b",
+            "label": "The Prole Quarters",
+            "description": "Recruiting allies",
+            "x": 0.35,
+            "y": 0.5,
+            "dialogueId": "dlg_node_b"
+        },
+        {
+            "id": "node_c",
+            "label": "Victory Mansions",
+            "description": "Winston's apartment — first diary fragments",
+            "x": 0.6,
+            "y": 0.15,
+            "dialogueId": "dlg_node_c"
+        },
+        {
+            "id": "node_d",
+            "label": "The Telescreen Factory",
+            "description": "Disrupting the 'Eyes'",
+            "x": 0.4,
+            "y": 0.85,
+            "dialogueId": "dlg_node_d"
+        },
+        {
+            "id": "node_e",
+            "label": "The Records Department",
+            "description": "Falsifying data to move forward",
+            "x": 0.6,
+            "y": 0.5,
+            "dialogueId": "dlg_node_e"
+        },
+        {
+            "id": "node_f",
+            "label": "Ministry of Plenty",
+            "description": "Acquiring high-tier rations",
+            "x": 0.5,
+            "y": 0.15,
+            "dialogueId": "dlg_node_f"
+        },
+        {
+            "id": "node_g",
+            "label": "Chestnut Tree Café",
+            "description": "Meeting a double agent",
+            "x": 0.55,
+            "y": 0.85,
+            "dialogueId": "dlg_node_g"
+        },
+        {
+            "id": "node_h",
+            "label": "O'Brien's Office",
+            "description": "Finding the first half of the passcode",
+            "x": 0.4,
+            "y": 0.5,
+            "dialogueId": "dlg_node_h"
+        },
+        {
+            "id": "node_i",
+            "label": "Ministry of Truth",
+            "description": "Infiltrating the mainframe",
+            "x": 0.5,
+            "y": 0.15,
+            "dialogueId": "dlg_node_i"
+        },
+        {
+            "id": "node_j",
+            "label": "Ministry of Love",
+            "description": "Rescuing the second protagonist",
+            "x": 0.45,
+            "y": 0.85,
+            "dialogueId": "dlg_node_j"
+        },
+        {
+            "id": "node_k",
+            "label": "Room 101",
+            "description": "Confronting the Face of the Party",
+            "x": 0.55,
+            "y": 0.5,
+            "dialogueId": "dlg_node_k"
+        },
+        {
+            "id": "node_l",
+            "label": "The Central Chamber",
+            "description": "Victory — The Archive",
+            "x": 0.5,
+            "y": 0.15,
+            "dialogueId": "dlg_node_l"
+        }
+    ],
+    "edges": [
+        {
+            "id": "path_ab",
+            "name": "St. Clement's Lane",
+            "fromNodeId": "node_a",
+            "toNodeId": "node_b",
+            "levelAssetPath": "assets/levels/level_1.json"
+        },
+        {
+            "id": "path_bc",
+            "name": "Victory Alley",
+            "fromNodeId": "node_b",
+            "toNodeId": "node_c",
+            "levelAssetPath": "assets/levels/level_1.json"
+        },
+        {
+            "id": "path_de",
+            "name": "Industrial Beltway 04",
+            "fromNodeId": "node_d",
+            "toNodeId": "node_e",
+            "levelAssetPath": "assets/levels/level_1.json"
+        },
+        {
+            "id": "path_ef",
+            "name": "Ministry Plaza",
+            "fromNodeId": "node_e",
+            "toNodeId": "node_f",
+            "levelAssetPath": "assets/levels/level_1.json"
+        },
+        {
+            "id": "path_gh",
+            "name": "Inner Party Corridor",
+            "fromNodeId": "node_g",
+            "toNodeId": "node_h",
+            "levelAssetPath": "assets/levels/level_1.json"
+        },
+        {
+            "id": "path_hi",
+            "name": "The Bridge of Silence",
+            "fromNodeId": "node_h",
+            "toNodeId": "node_i",
+            "levelAssetPath": "assets/levels/level_1.json"
+        },
+        {
+            "id": "path_jk",
+            "name": "Corridor of Four Fingers",
+            "fromNodeId": "node_j",
+            "toNodeId": "node_k",
+            "levelAssetPath": "assets/levels/level_1.json"
+        },
+        {
+            "id": "path_kl",
+            "name": "The Vault of Shadows",
+            "fromNodeId": "node_k",
+            "toNodeId": "node_l",
+            "levelAssetPath": "assets/levels/level_1.json"
+        }
+    ]
+}

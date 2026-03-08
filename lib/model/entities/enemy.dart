@@ -44,6 +44,15 @@ class Enemy extends Entity {
     this.enemyType = EnemyType.directional,
   });
 
+  /// Creates a fresh copy with the original construction parameters.
+  Enemy clone() => Enemy(
+        id: id,
+        position: patrolPath.isNotEmpty ? patrolPath.first : position,
+        patrolPath: List.of(patrolPath),
+        visionRange: visionRange,
+        enemyType: enemyType,
+      );
+
   /// The full tile-by-tile route.
   List<GridCoordinate> get expandedPath => _expandedPath;
 

@@ -55,5 +55,33 @@ void main() {
       enemy.advancePatrol();
       expect(enemy.facing, Direction.topLeft);
     });
+    test('clone produces an independent copy', () {
+      final enemy = Enemy(
+        id: 'e1',
+        position: const GridCoordinate(0, 0),
+        patrolPath: [
+          const GridCoordinate(0, 0),
+          const GridCoordinate(2, 0),
+        ],
+        visionRange: 3,
+        enemyType: EnemyType.radial,
+      );
+      enemy.initializePath(grid);
+
+      // Mutate the original
+      enemy.advancePatrol();
+      enemy.advancePatrol();
+
+      final clone = enemy.clone();
+      clone.initializePath(grid);
+
+      // Clone should be at its original start position
+      expect(clone.position, const GridCoordinate(0, 0));
+      expect(clone.visionRange, 3);
+      expect(clone.enemyType, EnemyType.radial);
+
+      // Original should still be mutated
+      expect(enemy.position, isNot(const GridCoordinate(0, 0)));
+    });
   });
 }

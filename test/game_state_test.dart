@@ -74,5 +74,57 @@ void main() {
       state.endTurn();
       expect(state.status, GameStatus.lost);
     });
+
+    test('dynamic status update: win without ending turn', () {
+      grid.setTileType(const GridCoordinate(0, 0), TileType.targetZone);
+      grid.setTileType(const GridCoordinate(1, 0), TileType.targetZone);
+
+      final state = GameState(
+        grid: grid,
+        characters: [char1, char2],
+        enemies: [],
+      );
+
+      // Start them outside
+      char1.position = const GridCoordinate(5, 0);
+      char2.position = const GridCoordinate(6, 0);
+
+      // Initially playing
+      state.updateStatus();
+      expect(state.status, GameStatus.playing);
+
+      // Move char1 to zone
+      char1.position = const GridCoordinate(0, 0);
+      state.updateStatus();
+      expect(state.status, GameStatus.playing); // Not won yet, char2 is left
+
+      // Move char2 to zone
+      char2.position = const GridCoordinate(1, 0);
+      state.updateStatus();
+      expect(state.status, GameStatus.won); // Won immediately!
+    });
+
+    test('dynamic status update: loss without ending turn', () {
+      final spottingEnemy = Enemy(
+        id: 'e1',
+        position: const GridCoordinate(0, 5),
+        patrolPath: [],
+        visionRange: 5,
+      );
+
+      final state = GameState(
+        grid: grid,
+        characters: [char1],
+        enemies: [spottingEnemy],
+      );
+
+      // Initially playing
+      expect(state.status, GameStatus.playing);
+
+      // Move char1 into vision
+      char1.position = const GridCoordinate(2, 5);
+      state.updateStatus();
+      expect(state.status, GameStatus.lost); // Lost immediately!
+    });
   });
 }

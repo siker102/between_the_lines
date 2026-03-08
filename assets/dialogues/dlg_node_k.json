@@ -1,0 +1,7 @@
+﻿{
+  "id": "dlg_node_k",
+  "lines": [
+    { "speakerId": "narrator", "text": "Room 101. Everyone knows what awaits inside." },
+    { "speakerId": "c1", "text": "This is where they break you. Unless you break them first." }
+  ]
+}

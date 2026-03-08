@@ -1,6 +1,7 @@
 import 'package:between_the_lines/model/entities/character.dart';
 import 'package:between_the_lines/model/game_state.dart';
 import 'package:between_the_lines/model/grid/grid_coordinate.dart';
+import 'package:between_the_lines/model/grid/hex_grid.dart';
 import 'package:between_the_lines/model/level_data.dart';
 import 'package:between_the_lines/model/systems/movement_calculator.dart';
 import 'package:between_the_lines/model/systems/vision_calculator.dart';
@@ -11,7 +12,6 @@ import 'package:between_the_lines/view/components/hex_tile.dart';
 import 'package:between_the_lines/view/components/level_view_component.dart';
 import 'package:between_the_lines/view/components/patrol_path_component.dart';
 import 'package:between_the_lines/view/utils/hex_math.dart';
-import 'package:between_the_lines/model/grid/hex_grid.dart';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/game.dart';
@@ -20,22 +20,30 @@ import 'package:flutter/material.dart';
 
 class StealthGame extends FlameGame {
   late GameState gameState;
+  final LevelData _level;
+  final VoidCallback? onLevelComplete;
 
-  // Level tracking
-  int _currentLevelIndex = 0;
+  // Stage tracking (within this single level)
+  int _currentStageIndex = 0;
   LevelViewComponent? _currentLevelView;
   late TextComponent _levelCounter;
 
-  // Component references (for the active level)
+  // Component references (for the active stage)
   final Map<GridCoordinate, HexTile> _tileComponents = {};
   final List<CharacterComponent> _characterComponents = [];
   final List<EnemyComponent> _enemyComponents = [];
   final List<GoalIndicatorComponent> _goalIndicators = [];
 
   CharacterComponent? _draggedCharacter;
-  Set<GridCoordinate> _currentReachableTiles = {};
+  Map<GridCoordinate, Reachability> _currentReachableTiles = {};
 
-  StealthGame() : super();
+  // Snapshot of character positions at stage start (for reset)
+  Map<String, GridCoordinate> _stageStartPositions = {};
+
+  StealthGame({
+    required LevelData levelData,
+    this.onLevelComplete,
+  }) : _level = levelData;
 
   @override
   Color backgroundColor() => Colors.black87;
@@ -43,14 +51,14 @@ class StealthGame extends FlameGame {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    _initializeLevel(_currentLevelIndex);
+    _initializeStage();
     _buildInitialWorld();
     _setupUI();
   }
 
   void _setupUI() {
     _levelCounter = TextComponent(
-      text: 'Level ${_currentLevelIndex + 1}',
+      text: _stageLabel,
       position: Vector2(20, 20),
       textRenderer: TextPaint(
         style: const TextStyle(
@@ -80,6 +88,13 @@ class StealthGame extends FlameGame {
     camera.viewport.add(debugButton);
   }
 
+  String get _stageLabel {
+    if (_level.stages.length == 1) {
+      return _level.name;
+    }
+    return '${_level.name} - Stage ${_currentStageIndex + 1}';
+  }
+
   void _debugWin() {
     if (gameState.status != GameStatus.playing) return;
 
@@ -96,43 +111,49 @@ class StealthGame extends FlameGame {
 
     // Trigger win check
     gameState.status = GameStatus.won;
-    _transitionToNextLevel();
+    _transitionToNextStage();
   }
 
-  // ── Level Setup ──
+  // ── Stage Setup ──
 
-  void _initializeLevel(int index) {
-    final data = levelsRepository[index];
-    final grid = data.createGrid();
+  void _initializeStage() {
+    final stage = _level.stages[_currentStageIndex];
+    final grid = stage.createGrid();
 
     // Player characters
     List<Character> characters;
-    if (_currentLevelIndex == 0) {
-      // Start at the bottom for the first level (row 12 for a 13-row grid)
+    if (_currentStageIndex == 0) {
+      // Start at the bottom for the very first stage
+      final lastRow = stage.height - 1;
       characters = [
         Character(
           id: 'c1',
-          position: GridCoordinate(2 - (12 / 2).floor(), 12),
+          position: GridCoordinate(2 - (lastRow / 2).floor(), lastRow),
         ),
         Character(
           id: 'c2',
-          position: GridCoordinate(3 - (12 / 2).floor(), 12),
+          position: GridCoordinate(3 - (lastRow / 2).floor(), lastRow),
         ),
       ];
     } else {
-      // Retain positions from previous level (already updated in transition)
+      // Retain positions from previous stage (already updated in transition)
       characters = gameState.characters;
     }
 
     gameState = GameState(
       grid: grid,
       characters: characters,
-      enemies: data.enemies,
+      enemies: stage.createEnemies(),
     );
 
     for (final enemy in gameState.enemies) {
       enemy.initializePath(grid);
     }
+
+    // Snapshot starting positions for stage reset
+    _stageStartPositions = {
+      for (final c in characters) c.id: c.position,
+    };
   }
 
   // ── World Construction ──
@@ -182,13 +203,13 @@ class StealthGame extends FlameGame {
     world.add(_currentLevelView!);
 
     // Add characters globally to world so they don't slide with levels automatically
-    // unless we want them to (but the user said "maps slide down", implying characters stay)
     for (final char in gameState.characters) {
       final cc = CharacterComponent(
         model: char,
         onDragStartCallback: _onCharacterDragStart,
         onDragUpdateCallback: _onCharacterDragUpdate,
         onDragEndCallback: _onCharacterDragEnd,
+        onDoubleTapCallback: _onCharacterDoubleTap,
       );
       cc.priority = 10; // Ensure characters are on top
       _characterComponents.add(cc);
@@ -199,21 +220,37 @@ class StealthGame extends FlameGame {
     _fitCamera();
   }
 
-  void _fitCamera() {
-    // 13-row grid bounding box:
-    // Left edge ~ -28, Right edge ~ 305 -> Width ~ 333
-    // Top edge ~ -32, Bottom edge ~ 608 -> Height ~ 640
-    // Center ~ Vector2(138.5, 288)
+  ({Vector2 position, double zoom}) _computeCameraFit(int stageIndex) {
+    // Compute grid bounds dynamically from the given stage
+    final stage = _level.stages[stageIndex];
+    final lastRow = stage.height - 1;
+    final lastCol = stage.width - 1;
 
-    camera.viewfinder.position = Vector2(138.5, 288);
-    camera.viewfinder.zoom = 1.0;
+    // Screen positions of the grid corners
+    final topLeft = HexMath.gridToScreen(const GridCoordinate(0, 0));
+    final qBottomRight = lastCol - (lastRow / 2).floor();
+    final bottomRight = HexMath.gridToScreen(GridCoordinate(qBottomRight, lastRow));
+
+    // Center the camera on the grid midpoint (with half-tile padding)
+    final center = (topLeft + bottomRight) / 2;
+    var currentZoom = 1.0;
 
     if (size.x > 0 && size.y > 0) {
-      // Calculate zoom to fit the grid with some padding
-      final zoomX = size.x / 360; // 333 + 27 padding
-      final zoomY = size.y / 680; // 640 + 40 padding
-      camera.viewfinder.zoom = (zoomX < zoomY ? zoomX : zoomY).clamp(0.5, 2.0);
+      // World size with one-tile padding on each side
+      final worldW = (bottomRight.x - topLeft.x).abs() + HexMath.width * 2;
+      final worldH = (bottomRight.y - topLeft.y).abs() + HexMath.height * 2;
+      final zoomX = size.x / worldW;
+      final zoomY = size.y / worldH;
+      currentZoom = (zoomX < zoomY ? zoomX : zoomY).clamp(0.5, 2.0);
     }
+
+    return (position: center, zoom: currentZoom);
+  }
+
+  void _fitCamera() {
+    final fit = _computeCameraFit(_currentStageIndex);
+    camera.viewfinder.position = fit.position;
+    camera.viewfinder.zoom = fit.zoom;
   }
 
   // ── Interaction Logic ──
@@ -222,13 +259,42 @@ class StealthGame extends FlameGame {
     if (gameState.status != GameStatus.playing) return;
 
     _draggedCharacter = cc;
+
+    final allyPositions = gameState.characters.where((c) => c.id != cc.model.id).map((c) => c.position).toSet();
+    final enemyPositions = gameState.enemies.map((e) => e.position).toSet();
+    final nextTurnEnemyPositions = gameState.enemies.map((e) => e.nextPosition).toSet();
+
+    // Calculate all currently observed tiles
+    final observedTiles = <GridCoordinate>{};
+    for (final enemy in gameState.enemies) {
+      observedTiles.addAll(VisionCalculator.calculateVision(gameState.grid, enemy));
+    }
+
     _currentReachableTiles = MovementCalculator.calculateReachableTiles(
-      gameState.grid,
-      cc.model,
+      grid: gameState.grid,
+      character: cc.model,
+      allyPositions: allyPositions,
+      enemyPositions: enemyPositions,
+      nextTurnEnemyPositions: nextTurnEnemyPositions,
+      observedTiles: observedTiles,
     );
 
-    for (final coord in _currentReachableTiles) {
-      _tileComponents[coord]?.highlightColors.add(Colors.blue);
+    for (final entry in _currentReachableTiles.entries) {
+      final coord = entry.key;
+      final status = entry.value;
+
+      Color color;
+      switch (status) {
+        case Reachability.walkable:
+          color = Colors.blue;
+        case Reachability.blockedByAlly:
+          color = Colors.blue.shade800;
+        case Reachability.blockedByEnemy:
+          color = Colors.red.shade800;
+        case Reachability.startPos:
+          color = Colors.blue.shade800;
+      }
+      _tileComponents[coord]?.highlightColors.add(color);
     }
     _spawnGoalIndicators();
   }
@@ -238,45 +304,38 @@ class StealthGame extends FlameGame {
   void _onCharacterDragEnd(CharacterComponent cc) {
     if (_draggedCharacter == null) return;
 
-    // Adjust drop position based on level view offset if needed
-    // Actually HexMath handles absolute world coordinates, and tiles are relative to LevelView.
-    // So we need to subtract LevelView position from world position to get local...
-    // OR just use the tile components to find the closest one.
-
     final worldPos = cc.position;
     final localPos = worldPos - _currentLevelView!.position;
     final dropPos = HexMath.screenToGrid(localPos);
 
-    for (final coord in _currentReachableTiles) {
-      _tileComponents[coord]?.highlightColors.remove(Colors.blue);
+    for (final entry in _currentReachableTiles.entries) {
+      final coord = entry.key;
+      final status = entry.value;
+
+      Color color;
+      switch (status) {
+        case Reachability.walkable:
+          color = Colors.blue;
+        case Reachability.blockedByAlly:
+          color = Colors.blue.shade800;
+        case Reachability.blockedByEnemy:
+          color = Colors.red.shade800;
+        case Reachability.startPos:
+          color = Colors.blue.shade800;
+      }
+      _tileComponents[coord]?.highlightColors.remove(color);
     }
     _removeGoalIndicators();
 
-    final didMove = _currentReachableTiles.contains(dropPos) && dropPos != cc.model.position;
+    final isWalkable = _currentReachableTiles[dropPos] == Reachability.walkable;
+    final didMove = isWalkable && dropPos != cc.model.position;
 
     if (didMove) {
       cc.model.position = dropPos;
       cc.model.hasMoved = true;
       cc.syncWithModel();
 
-      final allMoved = gameState.characters.every((c) => c.hasMoved);
-
-      if (allMoved) {
-        gameState.endTurn();
-        _clearEnemyVisionHighlights();
-        for (final ec in _enemyComponents) {
-          ec.animateToModel();
-        }
-        _updateEnemyVisionHighlights();
-      } else {
-        _updateEnemyVisionHighlights();
-      }
-
-      if (gameState.status == GameStatus.won) {
-        _transitionToNextLevel();
-      } else if (gameState.status == GameStatus.lost) {
-        debugPrint('GAME OVER: ${gameState.statusMessage}');
-      }
+      _onTurnCompletion();
     } else {
       cc.syncWithModel();
     }
@@ -285,34 +344,72 @@ class StealthGame extends FlameGame {
     _currentReachableTiles.clear();
   }
 
+  void _onCharacterDoubleTap(CharacterComponent cc) {
+    if (gameState.status != GameStatus.playing) return;
+    if (cc.model.hasMoved) return;
+
+    cc.model.hasMoved = true;
+    _onTurnCompletion();
+  }
+
+  void _onTurnCompletion() {
+    gameState.updateStatus();
+
+    final allMoved = gameState.characters.every((c) => c.hasMoved);
+
+    if (allMoved && gameState.status == GameStatus.playing) {
+      gameState.endTurn();
+      _clearEnemyVisionHighlights();
+      for (final ec in _enemyComponents) {
+        ec.animateToModel();
+      }
+      _updateEnemyVisionHighlights();
+    } else {
+      _updateEnemyVisionHighlights();
+    }
+
+    if (gameState.status == GameStatus.won) {
+      _transitionToNextStage();
+    } else if (gameState.status == GameStatus.lost) {
+      _showFailurePopup();
+    }
+  }
+
   // ── Transition Logic ──
 
-  Future<void> _transitionToNextLevel() async {
-    if (_currentLevelIndex + 1 >= levelsRepository.length) {
-      debugPrint('ALL LEVELS CLEARED!');
+  Future<void> _transitionToNextStage() async {
+    // Determine the next stage within this level
+    if (_currentStageIndex + 1 < _level.stages.length) {
+      // More stages in this level
+      _currentStageIndex++;
+    } else {
+      // All stages cleared — notify the shell.
+      debugPrint('LEVEL CLEARED!');
+      onLevelComplete?.call();
       return;
     }
 
     final oldLevelView = _currentLevelView!;
-    _currentLevelIndex++;
 
-    // 1. Prepare next level data
-    _initializeLevel(_currentLevelIndex);
+    // Grab next stage dimensions BEFORE _initializeStage replaces gameState
+    final nextStage = _level.stages[_currentStageIndex];
+    final nextLastRow = nextStage.height - 1;
 
-    // 2. Create next level view
+    // 1. Prepare next stage data
+    _initializeStage();
+
+    // 2. Create next stage view
     final nextLevelView = _createLevelView(gameState);
 
-    // 3. Animate sliding
+    // 3. Animate sliding — compute offset dynamically
     const duration = 1.5;
     const curve = Curves.easeInOutCubic;
 
-    // Perfect alignment offset calculation
-    // Logical column 0 at row 12 is GridCoordinate(-6, 12) due to axial offset: q = col - floor(r/2)
-    // Logical column 0 at row 0 is GridCoordinate(0, 0)
-    // We want these two to align vertically.
-    final row12Pos = HexMath.gridToScreen(const GridCoordinate(-6, 12));
-    final row0Pos = HexMath.gridToScreen(const GridCoordinate(0, 0));
-    final offset = row12Pos - row0Pos;
+    // The bottom-left of the next stage (offset col 0, last row)
+    final qAtLastRow = 0 - (nextLastRow / 2).floor();
+    final bottomPos = HexMath.gridToScreen(GridCoordinate(qAtLastRow, nextLastRow));
+    final topPos = HexMath.gridToScreen(const GridCoordinate(0, 0));
+    final offset = bottomPos - topPos;
 
     nextLevelView.position = oldLevelView.position - offset;
     world.add(nextLevelView);
@@ -321,6 +418,21 @@ class StealthGame extends FlameGame {
     // Temporary lock interaction
     final originalStatus = gameState.status;
     gameState.status = GameStatus.lost;
+
+    // Animate the camera cleanly to the next stage
+    final nextFit = _computeCameraFit(_currentStageIndex);
+    camera.viewfinder.add(
+      MoveToEffect(
+        nextFit.position,
+        EffectController(duration: duration, curve: curve),
+      ),
+    );
+    camera.viewfinder.add(
+      ScaleEffect.to(
+        Vector2.all(nextFit.zoom),
+        EffectController(duration: duration, curve: curve),
+      ),
+    );
 
     oldLevelView.add(
       MoveByEffect(
@@ -335,12 +447,12 @@ class StealthGame extends FlameGame {
         offset,
         EffectController(duration: duration, curve: curve),
         onComplete: () {
-          // NOW update model position to match visual result
+          // Remap character positions to the next stage's last row
           for (final char in gameState.characters) {
-            // column = q + floor(r/2). At r=0, column=q.
-            // We want to map this directly to Row 12 start zone: q = column - floor(12/2) = column - 6
-            final column = char.position.q;
-            char.position = GridCoordinate(column - 6, 12);
+            // Convert current axial q back to offset column, then to new axial
+            final offsetCol = char.position.q + (char.position.r / 2).floor();
+            final newQ = offsetCol - (nextLastRow / 2).floor();
+            char.position = GridCoordinate(newQ, nextLastRow);
           }
           for (final cc in _characterComponents) {
             cc.syncWithModel();
@@ -348,6 +460,7 @@ class StealthGame extends FlameGame {
 
           gameState.status = originalStatus == GameStatus.won ? GameStatus.playing : originalStatus;
           _updateEnemyVisionHighlights();
+          _fitCamera(); // Keep this as a final safety check/snap to ensure exactness natively
         },
       ),
     );
@@ -361,7 +474,7 @@ class StealthGame extends FlameGame {
       );
     }
 
-    _levelCounter.text = 'Level ${_currentLevelIndex + 1}';
+    _levelCounter.text = _stageLabel;
   }
 
   // ── Highlighting ──
@@ -385,15 +498,16 @@ class StealthGame extends FlameGame {
   // ── Goal Indicators ──
 
   void _spawnGoalIndicators() {
-    for (final coord in _currentReachableTiles) {
+    for (final entry in _currentReachableTiles.entries) {
+      if (entry.value != Reachability.walkable) continue;
+
+      final coord = entry.key;
       final tile = _tileComponents[coord];
       if (tile != null && tile.type == TileType.targetZone) {
         final indicator = GoalIndicatorComponent(
           tileCenter: HexMath.gridToScreen(coord),
         );
         _goalIndicators.add(indicator);
-        // Add to level view so it moves with it during transition if active?
-        // Actually goal indicators are only active during drag.
         _currentLevelView!.add(indicator);
       }
     }
@@ -404,5 +518,47 @@ class StealthGame extends FlameGame {
       indicator.removeFromParent();
     }
     _goalIndicators.clear();
+  }
+
+  // ── Failure / Reset ──
+
+  void _showFailurePopup() {
+    overlays.add('failure');
+  }
+
+  /// Resets the current stage to its initial state.
+  void resetCurrentStage() {
+    overlays.remove('failure');
+
+    // Tear down old view
+    _currentLevelView?.removeFromParent();
+    for (final cc in _characterComponents) {
+      cc.removeFromParent();
+    }
+    _characterComponents.clear();
+    _tileComponents.clear();
+    _enemyComponents.clear();
+    _goalIndicators.clear();
+
+    // Re-initialise the stage from scratch
+    final stage = _level.stages[_currentStageIndex];
+    final grid = stage.createGrid();
+
+    // Restore characters to their saved starting positions
+    final characters = _stageStartPositions.entries.map((e) => Character(id: e.key, position: e.value)).toList();
+
+    gameState = GameState(
+      grid: grid,
+      characters: characters,
+      enemies: stage.createEnemies(),
+    );
+
+    for (final enemy in gameState.enemies) {
+      enemy.initializePath(grid);
+    }
+
+    // Rebuild with fresh view
+    _buildInitialWorld();
+    _levelCounter.text = _stageLabel;
   }
 }

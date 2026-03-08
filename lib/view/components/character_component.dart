@@ -4,11 +4,12 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
 
-class CharacterComponent extends PositionComponent with DragCallbacks {
+class CharacterComponent extends PositionComponent with DragCallbacks, DoubleTapCallbacks {
   final Character model;
   final Function(CharacterComponent) onDragStartCallback;
   final Function(CharacterComponent) onDragUpdateCallback;
   final Function(CharacterComponent) onDragEndCallback;
+  final Function(CharacterComponent) onDoubleTapCallback;
 
   // Visual representation
   static const double baseRadius = 12.0;
@@ -18,6 +19,7 @@ class CharacterComponent extends PositionComponent with DragCallbacks {
     required this.onDragStartCallback,
     required this.onDragUpdateCallback,
     required this.onDragEndCallback,
+    required this.onDoubleTapCallback,
   }) : super(
           size: Vector2(baseRadius * 2, baseRadius * 2),
           anchor: Anchor.center,
@@ -53,6 +55,14 @@ class CharacterComponent extends PositionComponent with DragCallbacks {
     // Position might be snapped by the game logic, but if not we snap it back
     // to model.
     _updatePositionFromModel();
+  }
+
+  @override
+  void onDoubleTapDown(DoubleTapDownEvent event) {
+    if (model.hasMoved) {
+      return;
+    }
+    onDoubleTapCallback(this);
   }
 
   // Sync if model position changes outside of drag (e.g., reset)

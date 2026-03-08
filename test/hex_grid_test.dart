@@ -30,7 +30,7 @@ void main() {
 
     test('setTileType and getTileType persist data', () {
       final grid = HexGrid.rectangle(6, 13);
-      final coord = const GridCoordinate(0, 0);
+      const coord = GridCoordinate(0, 0);
 
       grid.setTileType(coord, TileType.blocked);
       expect(grid.getTileType(coord), TileType.blocked);

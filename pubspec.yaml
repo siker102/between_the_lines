@@ -23,3 +23,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: false
+  assets:
+    - assets/levels/
+    - assets/chapters/
+    - assets/dialogues/
+    - assets/images/character_full_view/
+    - assets/images/character_portrait/

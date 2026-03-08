@@ -17,38 +17,29 @@ void main() {
       );
 
       final reachable = MovementCalculator.calculateReachableTiles(
-        grid,
-        character,
+        grid: grid,
+        character: character,
+        allyPositions: {},
+        enemyPositions: {},
+        nextTurnEnemyPositions: {},
+        observedTiles: {},
       );
 
-      expect(reachable.length, 7); // Center + 6 adjacent
-      expect(reachable.contains(const GridCoordinate(0, 0)), isTrue);
-      expect(reachable.contains(const GridCoordinate(1, 0)), isTrue); // right
-      expect(
-        reachable.contains(const GridCoordinate(1, -1)),
-        isTrue,
-      ); // top right
-      expect(
-        reachable.contains(const GridCoordinate(0, -1)),
-        isTrue,
-      ); // top left
-      expect(reachable.contains(const GridCoordinate(-1, 0)), isTrue); // left
-      expect(
-        reachable.contains(const GridCoordinate(-1, 1)),
-        isTrue,
-      ); // bottom left
-      expect(
-        reachable.contains(const GridCoordinate(0, 1)),
-        isTrue,
-      ); // bottom right
+      expect(reachable.length, 7); // 6 adjacent + start position
+      expect(reachable[const GridCoordinate(0, 0)], Reachability.startPos);
+      expect(reachable.containsKey(const GridCoordinate(1, 0)), isTrue); // right
+      expect(reachable[const GridCoordinate(1, 0)], Reachability.walkable);
+
+      expect(reachable.containsKey(const GridCoordinate(1, -1)), isTrue); // top right
+      expect(reachable.containsKey(const GridCoordinate(0, -1)), isTrue); // top left
+      expect(reachable.containsKey(const GridCoordinate(-1, 0)), isTrue); // left
+      expect(reachable.containsKey(const GridCoordinate(-1, 1)), isTrue); // bottom left
+      expect(reachable.containsKey(const GridCoordinate(0, 1)), isTrue); // bottom right
     });
 
-    test('calculateReachableTiles respects obstacles on hex grid', () {
+    test('calculateReachableTiles respects obstacles and occupancy', () {
       final grid = HexGrid(-5, 5, -5, 5);
-      grid.setTileType(
-        const GridCoordinate(1, 0),
-        TileType.blocked,
-      ); // Block the right tile
+      grid.setTileType(const GridCoordinate(1, -1), TileType.blocked); // Block top-right
 
       final character = Character(
         id: 'c1',
@@ -57,12 +48,60 @@ void main() {
       );
 
       final reachable = MovementCalculator.calculateReachableTiles(
-        grid,
-        character,
+        grid: grid,
+        character: character,
+        allyPositions: {const GridCoordinate(1, 0)}, // Ally on the right
+        enemyPositions: {const GridCoordinate(0, 1)}, // Enemy on bottom-right
+        nextTurnEnemyPositions: {const GridCoordinate(-1, 1)}, // Enemy moving to bottom-left
+        observedTiles: {},
       );
 
-      expect(reachable.length, 6);
-      expect(reachable.contains(const GridCoordinate(1, 0)), isFalse);
+      // Start tile
+      expect(reachable[const GridCoordinate(0, 0)], Reachability.startPos);
+
+      // Blocked by grid
+      expect(reachable.containsKey(const GridCoordinate(1, -1)), isFalse);
+
+      // Blocked by ally (reachable but marked as blockedByAlly)
+      expect(reachable[const GridCoordinate(1, 0)], Reachability.blockedByAlly);
+
+      // Blocked by enemy (cannot pass through, marked as blockedByEnemy)
+      expect(reachable[const GridCoordinate(0, 1)], Reachability.blockedByEnemy);
+
+      // Blocked by next turn enemy
+      expect(reachable[const GridCoordinate(-1, 1)], Reachability.blockedByEnemy);
+
+      // Walkable
+      expect(reachable[const GridCoordinate(-1, 0)], Reachability.walkable);
+    });
+
+    test('calculateReachableTiles blocks movement through observed tiles', () {
+      final grid = HexGrid(-5, 5, -5, 5);
+      final character = Character(
+        id: 'c1',
+        position: const GridCoordinate(0, 0),
+      );
+
+      // (1, 0) is observed by an enemy
+      final observedTiles = {const GridCoordinate(1, 0)};
+
+      final reachable = MovementCalculator.calculateReachableTiles(
+        grid: grid,
+        character: character,
+        allyPositions: {},
+        enemyPositions: {},
+        nextTurnEnemyPositions: {},
+        observedTiles: observedTiles,
+      );
+
+      // (1, 0) should NOT be reachable because it is observed
+      expect(reachable.containsKey(const GridCoordinate(1, 0)), isFalse);
+
+      // (0, 0) should be Reachability.startPos
+      expect(reachable[const GridCoordinate(0, 0)], Reachability.startPos);
+
+      // (2, 0) should NOT be reachable because (1, 0) is impassable/blocked
+      expect(reachable.containsKey(const GridCoordinate(2, 0)), isFalse);
     });
   });
 
