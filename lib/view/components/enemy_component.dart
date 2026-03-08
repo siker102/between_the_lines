@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 class EnemyComponent extends PositionComponent {
   final Enemy model;
 
-  static const double baseRadius = 12.0;
+  static const double baseRadius = 24.0;
 
   // Animation state
   Vector2? _animTarget;

@@ -12,7 +12,7 @@ class CharacterComponent extends PositionComponent with DragCallbacks, DoubleTap
   final Function(CharacterComponent) onDoubleTapCallback;
 
   // Visual representation
-  static const double baseRadius = 12.0;
+  static const double baseRadius = 24.0;
 
   CharacterComponent({
     required this.model,
