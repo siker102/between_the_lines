@@ -7,12 +7,16 @@ class StageData {
   final int width;
   final int height;
   final Map<GridCoordinate, TileType> specialTiles;
+  final Map<GridCoordinate, String> tileKeys;
+  final Map<GridCoordinate, GridCoordinate> teleportLinks;
   final List<Enemy> enemies;
 
   StageData({
     required this.width,
     required this.height,
     this.specialTiles = const {},
+    this.tileKeys = const {},
+    this.teleportLinks = const {},
     this.enemies = const [],
   });
 
@@ -31,15 +35,65 @@ class StageData {
     final width = json['width'] as int;
     final height = json['height'] as int;
 
-    // Parse blocked tiles (offset [col, row] → axial GridCoordinate)
+    // Parse special tiles (offset [col, row] → axial GridCoordinate)
     final specialTiles = <GridCoordinate, TileType>{};
+    final tileKeys = <GridCoordinate, String>{};
+    final teleportLinks = <GridCoordinate, GridCoordinate>{};
+
+    GridCoordinate parseCoord(List pair) {
+      final col = pair[0] as int;
+      final row = pair[1] as int;
+      return GridCoordinate(col - (row / 2).floor(), row);
+    }
+
     if (json['blockedTiles'] != null) {
       for (final tile in json['blockedTiles'] as List) {
-        final pair = tile as List;
-        final col = pair[0] as int;
-        final row = pair[1] as int;
-        final q = col - (row / 2).floor();
-        specialTiles[GridCoordinate(q, row)] = TileType.blocked;
+        specialTiles[parseCoord(tile as List)] = TileType.blocked;
+      }
+    }
+
+    if (json['hidingTiles'] != null) {
+      for (final tile in json['hidingTiles'] as List) {
+        specialTiles[parseCoord(tile as List)] = TileType.hiding;
+      }
+    }
+
+    if (json['unstableTiles'] != null) {
+      for (final tile in json['unstableTiles'] as List) {
+        specialTiles[parseCoord(tile as List)] = TileType.unstable;
+      }
+    }
+
+    if (json['pressurePlates'] != null) {
+      for (final plateData in json['pressurePlates'] as List) {
+        final map = plateData as Map<String, dynamic>;
+        final coord = parseCoord(map['position'] as List);
+        specialTiles[coord] = TileType.pressurePlate;
+        tileKeys[coord] = map['key'] as String;
+      }
+    }
+
+    if (json['pressureObstacles'] != null) {
+      for (final obstacleData in json['pressureObstacles'] as List) {
+        final map = obstacleData as Map<String, dynamic>;
+        final coord = parseCoord(map['position'] as List);
+        specialTiles[coord] = TileType.pressureObstacle;
+        tileKeys[coord] = map['key'] as String;
+      }
+    }
+
+    if (json['teleports'] != null) {
+      for (final tpData in json['teleports'] as List) {
+        final map = tpData as Map<String, dynamic>;
+        final from = parseCoord(map['from'] as List);
+        final to = parseCoord(map['to'] as List);
+
+        // Make teleport bi-directional
+        specialTiles[from] = TileType.teleport;
+        teleportLinks[from] = to;
+
+        specialTiles[to] = TileType.teleport;
+        teleportLinks[to] = from;
       }
     }
 
@@ -55,6 +109,8 @@ class StageData {
       width: width,
       height: height,
       specialTiles: specialTiles,
+      tileKeys: tileKeys,
+      teleportLinks: teleportLinks,
       enemies: enemies,
     );
   }

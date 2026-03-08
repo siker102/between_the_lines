@@ -54,6 +54,9 @@ class GameState {
     for (final enemy in enemies) {
       final visibleTiles = VisionCalculator.calculateVision(grid, enemy);
       for (final character in characters) {
+        if (grid.getTileType(character.position) == TileType.hiding) {
+          continue; // Character is hidden
+        }
         if (visibleTiles.contains(character.position)) {
           status = GameStatus.lost;
           statusMessage = 'You were spotted! Big Brother is watching.';

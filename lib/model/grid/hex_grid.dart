@@ -4,6 +4,12 @@ enum TileType {
   empty,
   blocked,
   targetZone, // The zone the player needs to reach
+  pressurePlate,
+  pressureObstacle,
+  teleport,
+  hiding,
+  unstable,
+  crumbled,
 }
 
 class HexGrid {
@@ -48,6 +54,11 @@ class HexGrid {
 
   bool isWalkable(GridCoordinate coordinate) {
     final type = getTileType(coordinate);
-    return type == TileType.empty || type == TileType.targetZone;
+    return type == TileType.empty ||
+        type == TileType.targetZone ||
+        type == TileType.teleport ||
+        type == TileType.hiding ||
+        type == TileType.unstable ||
+        type == TileType.pressurePlate;
   }
 }

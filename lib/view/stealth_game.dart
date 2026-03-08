@@ -86,6 +86,23 @@ class StealthGame extends FlameGame {
       onPressed: _debugWin,
     );
     camera.viewport.add(debugButton);
+
+    // Restart Stage Button
+    final restartButton = ButtonComponent(
+      button: TextComponent(
+        text: 'RESTART',
+        textRenderer: TextPaint(
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      position: Vector2(150, 60),
+      onPressed: resetCurrentStage,
+    );
+    camera.viewport.add(restartButton);
   }
 
   String get _stageLabel {
@@ -154,6 +171,8 @@ class StealthGame extends FlameGame {
     _stageStartPositions = {
       for (final c in characters) c.id: c.position,
     };
+
+    _updatePressurePlates();
   }
 
   // ── World Construction ──
@@ -260,6 +279,43 @@ class StealthGame extends FlameGame {
 
     _draggedCharacter = cc;
 
+    final stage = _level.stages[_currentStageIndex];
+
+    // Safety check: is the character standing on a pressurePlate?
+    if (stage.specialTiles[cc.model.position] == TileType.pressurePlate) {
+      final key = stage.tileKeys[cc.model.position];
+      if (key != null) {
+        var keyStillActive = false;
+        for (final otherChar in gameState.characters) {
+          if (otherChar.id == cc.model.id) continue;
+          if (stage.specialTiles[otherChar.position] == TileType.pressurePlate &&
+              stage.tileKeys[otherChar.position] == key) {
+            keyStillActive = true;
+            break;
+          }
+        }
+
+        if (!keyStillActive) {
+          var someoneOnObstacle = false;
+          for (final anyChar in gameState.characters) {
+            if (stage.specialTiles[anyChar.position] == TileType.pressureObstacle &&
+                stage.tileKeys[anyChar.position] == key) {
+              someoneOnObstacle = true;
+              break;
+            }
+          }
+
+          if (someoneOnObstacle) {
+            // Safety Lock! Prevent movement that would crush a teammate
+            _currentReachableTiles = {cc.model.position: Reachability.startPos};
+            final color = Colors.blue.shade800;
+            _tileComponents[cc.model.position]?.highlightColors.add(color);
+            return;
+          }
+        }
+      }
+    }
+
     final allyPositions = gameState.characters.where((c) => c.id != cc.model.id).map((c) => c.position).toSet();
     final enemyPositions = gameState.enemies.map((e) => e.position).toSet();
     final nextTurnEnemyPositions = gameState.enemies.map((e) => e.nextPosition).toSet();
@@ -331,10 +387,29 @@ class StealthGame extends FlameGame {
     final didMove = isWalkable && dropPos != cc.model.position;
 
     if (didMove) {
-      cc.model.position = dropPos;
+      final startPos = cc.model.position;
+      var finalPos = dropPos;
+
+      // Teleportation
+      final stageData = _level.stages[_currentStageIndex];
+      if (stageData.specialTiles[finalPos] == TileType.teleport) {
+        final destination = stageData.teleportLinks[finalPos];
+        if (destination != null) {
+          finalPos = destination;
+        }
+      }
+
+      // Unstable tile crumbling
+      if (gameState.grid.getTileType(startPos) == TileType.unstable) {
+        gameState.grid.setTileType(startPos, TileType.crumbled);
+        _tileComponents[startPos]?.type = TileType.crumbled;
+      }
+
+      cc.model.position = finalPos;
       cc.model.hasMoved = true;
       cc.syncWithModel();
 
+      _updatePressurePlates();
       _onTurnCompletion();
     } else {
       cc.syncWithModel();
@@ -347,6 +422,24 @@ class StealthGame extends FlameGame {
   void _onCharacterDoubleTap(CharacterComponent cc) {
     if (gameState.status != GameStatus.playing) return;
     if (cc.model.hasMoved) return;
+
+    final startPos = cc.model.position;
+
+    // Prevent waiting on an unstable tile
+    if (gameState.grid.getTileType(startPos) == TileType.unstable) {
+      return;
+    }
+
+    // Teleportation on Wait
+    final stageData = _level.stages[_currentStageIndex];
+    if (stageData.specialTiles[startPos] == TileType.teleport) {
+      final destination = stageData.teleportLinks[startPos];
+      if (destination != null) {
+        cc.model.position = destination;
+        cc.syncWithModel();
+        _updatePressurePlates();
+      }
+    }
 
     cc.model.hasMoved = true;
     _onTurnCompletion();
@@ -560,5 +653,33 @@ class StealthGame extends FlameGame {
     // Rebuild with fresh view
     _buildInitialWorld();
     _levelCounter.text = _stageLabel;
+  }
+
+  void _updatePressurePlates() {
+    final stage = _level.stages[_currentStageIndex];
+    if (stage.tileKeys.isEmpty) return;
+
+    final activeKeys = <String>{};
+    for (final char in gameState.characters) {
+      if (stage.specialTiles[char.position] == TileType.pressurePlate) {
+        final key = stage.tileKeys[char.position];
+        if (key != null) activeKeys.add(key);
+      }
+    }
+
+    for (final entry in stage.specialTiles.entries) {
+      if (entry.value == TileType.pressureObstacle) {
+        final coord = entry.key;
+        final key = stage.tileKeys[coord];
+        final isOpen = key != null && activeKeys.contains(key);
+
+        gameState.grid.setTileType(coord, isOpen ? TileType.empty : TileType.pressureObstacle);
+
+        final tileCompo = _tileComponents[coord];
+        if (tileCompo != null) {
+          tileCompo.isOpen = isOpen;
+        }
+      }
+    }
   }
 }

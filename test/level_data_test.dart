@@ -39,6 +39,59 @@ void main() {
       expect(stage.specialTiles[const GridCoordinate(0, 7)], TileType.blocked);
     });
 
+    test('parses hiding, unstable, pressure, and teleport tiles', () {
+      final json = {
+        'width': 6,
+        'height': 13,
+        'hidingTiles': [
+          [2, 10],
+        ],
+        'unstableTiles': [
+          [4, 10], // row 10,  col 4 -> q = 4 - floor(10/2) = 4 - 5 = -1
+        ],
+        'pressurePlates': [
+          {
+            'position': [1, 10], // row 10, col 1 -> q = 1 - 5 = -4
+            'key': 'door1',
+          }
+        ],
+        'pressureObstacles': [
+          {
+            'position': [3, 9], // row 9, col 3 -> q = 3 - floor(9/2) = 3 - 4 = -1
+            'key': 'door1',
+          }
+        ],
+        'teleports': [
+          {
+            'from': [5, 11], // row 11, col 5 -> q = 5 - floor(11/2) = 5 - 5 = 0
+            'to': [5, 5], // row 5, col 5 -> q = 5 - floor(5/2) = 5 - 2 = 3
+          }
+        ],
+      };
+
+      final stage = StageData.fromJson(json);
+
+      expect(stage.specialTiles[const GridCoordinate(-3, 10)], TileType.hiding);
+      expect(stage.specialTiles[const GridCoordinate(-1, 10)], TileType.unstable);
+
+      const plateCoord = GridCoordinate(-4, 10);
+      expect(stage.specialTiles[plateCoord], TileType.pressurePlate);
+      expect(stage.tileKeys[plateCoord], 'door1');
+
+      const obstacleCoord = GridCoordinate(-1, 9);
+      expect(stage.specialTiles[obstacleCoord], TileType.pressureObstacle);
+      expect(stage.tileKeys[obstacleCoord], 'door1');
+
+      const tpFrom = GridCoordinate(0, 11);
+      const tpTo = GridCoordinate(3, 5);
+
+      expect(stage.specialTiles[tpFrom], TileType.teleport);
+      expect(stage.teleportLinks[tpFrom], tpTo);
+
+      expect(stage.specialTiles[tpTo], TileType.teleport);
+      expect(stage.teleportLinks[tpTo], tpFrom);
+    });
+
     test('parses enemies with correct positions and patrol paths', () {
       final json = {
         'width': 6,

@@ -30,6 +30,63 @@
           7
         ]
       ],
+      "hidingTiles": [
+        [
+          2,
+          10
+        ],
+        [
+          4,
+          8
+        ]
+      ],
+      "unstableTiles": [
+        [
+          4,
+          10
+        ],
+        [
+          3,
+          11
+        ]
+      ],
+      "pressurePlates": [
+        {
+          "position": [
+            0,
+            10
+          ],
+          "key": "door1"
+        }
+      ],
+      "pressureObstacles": [
+        {
+          "position": [
+            2,
+            9
+          ],
+          "key": "door1"
+        },
+        {
+          "position": [
+            3,
+            9
+          ],
+          "key": "door1"
+        }
+      ],
+      "teleports": [
+        {
+          "from": [
+            5,
+            11
+          ],
+          "to": [
+            5,
+            5
+          ]
+        }
+      ],
       "enemies": [
         {
           "id": "e1_s1",
@@ -73,16 +130,16 @@
           "id": "e3_s1",
           "position": [
             2,
-            9
+            8
           ],
           "patrolPath": [
             [
               2,
-              9
+              8
             ],
             [
               3,
-              9
+              8
             ]
           ],
           "visionRange": 2,

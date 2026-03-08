@@ -11,7 +11,8 @@ import 'package:flutter/material.dart';
 /// into a combined color (purple).
 class HexTile extends PositionComponent {
   final GridCoordinate coordinate;
-  final TileType type;
+  TileType type;
+  bool isOpen = false;
 
   /// Active highlight colors. When both blue and red are
   /// present, the tile renders as purple.
@@ -32,6 +33,23 @@ class HexTile extends PositionComponent {
 
   static final Paint _targetPaint = Paint()
     ..color = Colors.green[200]!
+    ..style = PaintingStyle.fill;
+
+  static final Paint _pressureBorderPaint = Paint()
+    ..color = Colors.pinkAccent
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 2.0;
+
+  static final Paint _hidingPaint = Paint()
+    ..color = Colors.lightGreen[800]!
+    ..style = PaintingStyle.fill;
+
+  static final Paint _teleportPaint = Paint()
+    ..color = Colors.cyanAccent
+    ..style = PaintingStyle.fill;
+
+  static final Paint _unstablePaint = Paint()
+    ..color = Colors.brown[400]!
     ..style = PaintingStyle.fill;
 
   HexTile({
@@ -64,14 +82,21 @@ class HexTile extends PositionComponent {
       ..lineTo(cx - w / 2, cy - s / 2)
       ..close();
 
-    // Base fill
     Paint fill;
     switch (type) {
       case TileType.blocked:
-        fill = _blockedPaint;
+      case TileType.crumbled:
+      case TileType.pressureObstacle:
+        fill = isOpen ? _fillPaint : _blockedPaint;
       case TileType.targetZone:
         fill = _targetPaint;
+      case TileType.hiding:
+        fill = _hidingPaint;
+      case TileType.unstable:
+        fill = _unstablePaint;
       case TileType.empty:
+      case TileType.pressurePlate:
+      case TileType.teleport:
         fill = _fillPaint;
     }
     canvas.drawPath(path, fill);
@@ -85,7 +110,19 @@ class HexTile extends PositionComponent {
       canvas.drawPath(path, paint);
     }
 
-    canvas.drawPath(path, _defaultPaint);
+    // Draw inner shapes for teleport/plate
+    if (type == TileType.teleport) {
+      canvas.drawCircle(Offset(cx, cy), s / 3, _teleportPaint);
+    } else if (type == TileType.pressurePlate) {
+      canvas.drawCircle(Offset(cx, cy), s / 4, _pressureBorderPaint);
+    }
+
+    // Border
+    if (type == TileType.pressurePlate || type == TileType.pressureObstacle) {
+      canvas.drawPath(path, _pressureBorderPaint);
+    } else {
+      canvas.drawPath(path, _defaultPaint);
+    }
   }
 
   /// Blends all active highlight colors.
