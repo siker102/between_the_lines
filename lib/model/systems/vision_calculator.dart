@@ -1,15 +1,8 @@
-import 'dart:collection';
-
 import 'package:between_the_lines/model/entities/enemy.dart';
 import 'package:between_the_lines/model/grid/grid_coordinate.dart';
 import 'package:between_the_lines/model/grid/hex_grid.dart';
 
 /// Calculates visible tiles for enemies based on their [EnemyType].
-///
-/// New vision strategies can be added by:
-/// 1. Adding a value to [EnemyType].
-/// 2. Creating a `_calculate<Type>Vision` method here.
-/// 3. Adding the case to [calculateVision].
 class VisionCalculator {
   static Set<GridCoordinate> calculateVision(
     HexGrid grid,
@@ -39,47 +32,32 @@ class VisionCalculator {
       if (!grid.isWithinBounds(pos)) {
         break;
       }
-      if (grid.getTileType(pos) == TileType.blocked) {
-        break;
+      if (!_hasLineOfSight(grid, start, pos)) {
+        break; // if sight is blocked here, it is blocked further down the ray
       }
       visible.add(pos);
     }
     return visible;
   }
 
-  // ── Radial: BFS flood in all directions ──
+  // ── Radial: Flood within range and check LoS ──
 
   static Set<GridCoordinate> _calculateRadialVision(
     HexGrid grid,
     Enemy enemy,
   ) {
     final visible = <GridCoordinate>{};
-    final queue = Queue<_BfsNode>();
-    final visited = <GridCoordinate>{enemy.position};
+    final start = enemy.position;
+    final r = enemy.visionRange;
 
-    queue.add(_BfsNode(enemy.position, 0));
-
-    while (queue.isNotEmpty) {
-      final node = queue.removeFirst();
-      if (node.dist > 0) {
-        visible.add(node.coord);
-      }
-      if (node.dist >= enemy.visionRange) {
-        continue;
-      }
-
-      for (final neighbor in node.coord.adjacentCoordinates) {
-        if (visited.contains(neighbor)) {
-          continue;
+    for (var dq = -r; dq <= r; dq++) {
+      for (var dr = -r; dr <= r; dr++) {
+        final pos = GridCoordinate(start.q + dq, start.r + dr);
+        if (_hexDistance(start, pos) <= r && pos != start) {
+          if (_hasLineOfSight(grid, start, pos)) {
+            visible.add(pos);
+          }
         }
-        visited.add(neighbor);
-        if (!grid.isWithinBounds(neighbor)) {
-          continue;
-        }
-        if (grid.getTileType(neighbor) == TileType.blocked) {
-          continue;
-        }
-        queue.add(_BfsNode(neighbor, node.dist + 1));
       }
     }
     return visible;
@@ -96,24 +74,93 @@ class VisionCalculator {
 
     for (var i = 1; i <= enemy.visionRange; i++) {
       final pos = _stepInDirection(start, enemy.facing, i);
-      if (!grid.isWithinBounds(pos)) {
-        break;
+
+      if (_hasLineOfSight(grid, start, pos)) {
+        visible.add(pos);
       }
-      if (grid.getTileType(pos) == TileType.blocked) {
-        break;
-      }
-      visible.add(pos);
 
       // Cone: add neighbors at the same hex distance
       if (i > 1) {
         for (final neighbor in pos.adjacentCoordinates) {
           if (_hexDistance(neighbor, start) == i) {
-            _tryAdd(grid, neighbor, visible);
+            if (_hasLineOfSight(grid, start, neighbor)) {
+              visible.add(neighbor);
+            }
           }
         }
       }
     }
     return visible;
+  }
+
+  // ── Line of Sight Helpers ──
+
+  /// Verifies if a straight line from [start] to [end] is clear of blocks.
+  static bool _hasLineOfSight(HexGrid grid, GridCoordinate start, GridCoordinate end) {
+    final line = _hexLinedraw(start, end);
+    for (var i = 0; i < line.length; i++) {
+      final pos = line[i];
+      if (!grid.isWithinBounds(pos)) return false;
+      // start tile never blocks its own line of sight
+      if (pos != start) {
+        final type = grid.getTileType(pos);
+        if (type == TileType.blocked || type == TileType.pressureObstacle) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /// Calculates the hexes intersected by a straight line between [a] and [b].
+  static List<GridCoordinate> _hexLinedraw(GridCoordinate a, GridCoordinate b) {
+    final n = _hexDistance(a, b);
+    final results = <GridCoordinate>[];
+    if (n == 0) {
+      results.add(a);
+      return results;
+    }
+
+    // Add a small epsilon to coordinates to nudge the line
+    // This avoids edge/corner ambiguity by consistently picking one side.
+    const epsilonQ = 1e-6;
+    const epsilonR = 1e-6;
+    const epsilonS = -2e-6;
+
+    final aQ = a.q + epsilonQ;
+    final aR = a.r + epsilonR;
+    final aS = a.s + epsilonS;
+
+    final bQ = b.q + epsilonQ;
+    final bR = b.r + epsilonR;
+    final bS = b.s + epsilonS;
+
+    for (var i = 0; i <= n; i++) {
+      final t = n == 0 ? 0.0 : i / n;
+      final q = aQ + (bQ - aQ) * t;
+      final r = aR + (bR - aR) * t;
+      final s = aS + (bS - aS) * t;
+      results.add(_cubeRound(q, r, s));
+    }
+    return results;
+  }
+
+  /// Converts fractional cube coordinates back to the nearest hex grid coordinate.
+  static GridCoordinate _cubeRound(double fracQ, double fracR, double fracS) {
+    var q = fracQ.round();
+    var r = fracR.round();
+    final s = fracS.round();
+
+    final qDiff = (q - fracQ).abs();
+    final rDiff = (r - fracR).abs();
+    final sDiff = (s - fracS).abs();
+
+    if (qDiff > rDiff && qDiff > sDiff) {
+      q = -r - s;
+    } else if (rDiff > sDiff) {
+      r = -q - s;
+    }
+    return GridCoordinate(q, r);
   }
 
   // ── Shared helpers ──
@@ -153,20 +200,4 @@ class VisionCalculator {
   static int _hexDistance(GridCoordinate a, GridCoordinate b) {
     return ((a.q - b.q).abs() + (a.r - b.r).abs() + (a.s - b.s).abs()) ~/ 2;
   }
-
-  static void _tryAdd(
-    HexGrid grid,
-    GridCoordinate pos,
-    Set<GridCoordinate> visible,
-  ) {
-    if (grid.isWithinBounds(pos) && grid.getTileType(pos) != TileType.blocked) {
-      visible.add(pos);
-    }
-  }
-}
-
-class _BfsNode {
-  final GridCoordinate coord;
-  final int dist;
-  const _BfsNode(this.coord, this.dist);
 }
