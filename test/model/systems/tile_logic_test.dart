@@ -16,11 +16,10 @@ void main() {
         position: const GridCoordinate(0, 0),
         patrolPath: [],
         visionRange: 3,
-        enemyType: EnemyType.directional,
       );
 
       // Character exactly in vision at (1, 0)
-      final charPos = const GridCoordinate(1, 0);
+      const charPos = GridCoordinate(1, 0);
       final character = Character(
         id: 'c1',
         position: charPos,
@@ -50,10 +49,9 @@ void main() {
         position: const GridCoordinate(0, 0),
         patrolPath: [],
         visionRange: 3,
-        enemyType: EnemyType.directional,
       );
 
-      final charPos = const GridCoordinate(1, 0);
+      const charPos = GridCoordinate(1, 0);
       final character = Character(
         id: 'c1',
         position: charPos,
@@ -73,6 +71,24 @@ void main() {
 
       // Enemy spots character
       expect(state.status, GameStatus.lost);
+    });
+  });
+
+  group('Tile Walkability', () {
+    test('Crumbled UnstableTiles act like blocked tiles', () {
+      final grid = HexGrid.rectangle(3, 3);
+      const charPos = GridCoordinate(0, 0);
+      const destPos = GridCoordinate(2, 0);
+
+      // Set middle tile to crumbled
+      const middlePos = GridCoordinate(1, 0);
+      grid.setTileType(middlePos, TileType.crumbled);
+
+      // Verify the HexGrid refuses to consider it walkable
+      expect(grid.isWalkable(middlePos), isFalse);
+
+      // Also verify empty tiles ARE walkable to prove the contrast
+      expect(grid.isWalkable(destPos), isTrue);
     });
   });
 }
