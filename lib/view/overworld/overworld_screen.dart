@@ -482,9 +482,6 @@ class _OverworldScreenState extends State<OverworldScreen> with TickerProviderSt
       _moveController.forward(from: 0).then((_) {
         if (mounted) {
           widget.onEdgeSelected(nextEdge);
-          setState(() {
-            _moveAnimation = null;
-          });
         }
       });
     }

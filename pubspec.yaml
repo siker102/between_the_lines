@@ -25,7 +25,7 @@ flutter:
   uses-material-design: false
   assets:
     - assets/levels/
-    - assets/chapters/
+    - assets/story/
     - assets/dialogues/
     - assets/images/character_full_view/
     - assets/images/character_portrait/

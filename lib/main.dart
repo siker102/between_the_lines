@@ -82,6 +82,10 @@ class _GameShellState extends State<GameShell> {
   }
 
   Future<void> _startGameplay(StoryEdge edge) async {
+    setState(() {
+      _screen = AppScreen.loading;
+    });
+
     final levelData = await LevelRepository.loadLevel(edge.levelAssetPath);
 
     final game = StealthGame(
@@ -141,6 +145,11 @@ class _GameShellState extends State<GameShell> {
   }
 
   Future<void> _startBossLevel() async {
+    setState(() {
+      _screen = AppScreen.loading;
+      _pendingDialogue = null;
+    });
+
     final district = _overworldState.currentDistrict;
     final levelData = await LevelRepository.loadLevel(district.bossLevelAssetPath!);
 

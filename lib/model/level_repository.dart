@@ -13,7 +13,7 @@ class LevelRepository {
 
   /// Asset paths for all chapters, in order.
   static const List<String> _chapterAssets = [
-    'assets/chapters/chapter_1.json',
+    'assets/story/game_story.json',
   ];
 
   /// Loads every level defined in [_levelAssets].
