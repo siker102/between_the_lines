@@ -153,8 +153,15 @@ class StealthGame extends FlameGame {
         ),
       ];
     } else {
-      // Retain positions from previous stage (already updated in transition)
+      // Retain positions from previous stage and remap them to the start of the new stage
+      final nextLastRow = stage.height - 1;
       characters = gameState.characters;
+      for (final char in characters) {
+        final offsetCol = char.position.q + (char.position.r / 2).floor();
+        final newQ = offsetCol - (nextLastRow / 2).floor();
+        char.position = GridCoordinate(newQ, nextLastRow);
+        char.hasMoved = false; // Reset move status for the new stage
+      }
     }
 
     gameState = GameState(
@@ -540,13 +547,6 @@ class StealthGame extends FlameGame {
         offset,
         EffectController(duration: duration, curve: curve),
         onComplete: () {
-          // Remap character positions to the next stage's last row
-          for (final char in gameState.characters) {
-            // Convert current axial q back to offset column, then to new axial
-            final offsetCol = char.position.q + (char.position.r / 2).floor();
-            final newQ = offsetCol - (nextLastRow / 2).floor();
-            char.position = GridCoordinate(newQ, nextLastRow);
-          }
           for (final cc in _characterComponents) {
             cc.syncWithModel();
           }
