@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"\nfrom PIL import Image\nimport os\nsheets = [\n    'C:/Users/Simon/Repos/between_the_lines/assets/images/spritesheets/man/idle_anim.png',\n    'C:/Users/Simon/Repos/between_the_lines/assets/images/spritesheets/man/walk_anim.png',\n    'C:/Users/Simon/Repos/between_the_lines/assets/images/spritesheets/woman/idle_anim.png',\n    'C:/Users/Simon/Repos/between_the_lines/assets/images/spritesheets/woman/walk_anim.png',\n    'C:/Users/Simon/Repos/between_the_lines/assets/images/spritesheets/soldier/idle_anim.png',\n    'C:/Users/Simon/Repos/between_the_lines/assets/images/spritesheets/soldier/walk_anim.png',\n]\nfor path in sheets:\n    img = Image.open\\(path\\)\n    print\\(f'{os.path.basename\\(os.path.dirname\\(path\\)\\)}/{os.path.basename\\(path\\)}: {img.size}'\\)\n\")",
+      "Bash(magick identify:*)"
+    ]
+  }
+}

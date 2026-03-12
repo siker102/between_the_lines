@@ -3,16 +3,19 @@ import 'package:between_the_lines/model/grid/hex_grid.dart';
 import 'package:between_the_lines/view/utils/hex_math.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
 /// A single hex cell on the board.
 ///
 /// Supports multiple simultaneous highlight layers so that
 /// overlapping ranges (e.g. blue move + red vision) blend
 /// into a combined color (purple).
-class HexTile extends PositionComponent {
+class HexTile extends PositionComponent with HasGameReference {
   final GridCoordinate coordinate;
   TileType type;
   bool isOpen = false;
+  bool isOccupied = false; // used by hiding tiles: true when a character stands here
+  bool isActive = false; // used by pressurePlate tiles: true when pressed
 
   /// Active highlight colors. When both blue and red are
   /// present, the tile renders as purple.
@@ -36,21 +39,17 @@ class HexTile extends PositionComponent {
     ..style = PaintingStyle.fill;
 
   static final Paint _pressureBorderPaint = Paint()
-    ..color = Colors.pinkAccent
+    ..color = const Color.fromRGBO(0, 167, 167, 1.0)
     ..style = PaintingStyle.stroke
     ..strokeWidth = 2.0;
 
-  static final Paint _hidingPaint = Paint()
-    ..color = Colors.lightGreen[800]!
-    ..style = PaintingStyle.fill;
-
-  static final Paint _teleportPaint = Paint()
-    ..color = Colors.cyanAccent
-    ..style = PaintingStyle.fill;
-
-  static final Paint _unstablePaint = Paint()
-    ..color = Colors.brown[400]!
-    ..style = PaintingStyle.fill;
+  // Sprites
+  Sprite? _teleportSprite;
+  Sprite? _hidingIdleSprite;
+  Sprite? _hidingActiveSprite;
+  Sprite? _bluePlateIdleSprite;
+  Sprite? _bluePlateActiveSprite;
+  Sprite? _brownIdleSprite;
 
   HexTile({
     required this.coordinate,
@@ -59,6 +58,20 @@ class HexTile extends PositionComponent {
     position = HexMath.gridToScreen(coordinate);
     anchor = Anchor.center;
     size = Vector2(HexMath.width, HexMath.height);
+  }
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+
+    // Load only the sprites relevant to this tile's type to avoid wasting memory,
+    // though Flame's image cache deduplicates. For simplicity, we can load what we need.
+    _teleportSprite = await game.loadSprite('tiles/teleport_active.png');
+    _hidingIdleSprite = await game.loadSprite('tiles/green_idle.png');
+    _hidingActiveSprite = await game.loadSprite('tiles/green_active.png');
+    _bluePlateIdleSprite = await game.loadSprite('tiles/blue_idle.png');
+    _bluePlateActiveSprite = await game.loadSprite('tiles/blue_active.png');
+    _brownIdleSprite = await game.loadSprite('tiles/brown_idle.png');
   }
 
   bool get isHighlighted => highlightColors.isNotEmpty;
@@ -82,24 +95,41 @@ class HexTile extends PositionComponent {
       ..lineTo(cx - w / 2, cy - s / 2)
       ..close();
 
-    Paint fill;
+    Paint? fill;
     switch (type) {
       case TileType.blocked:
       case TileType.crumbled:
+        fill = _blockedPaint;
       case TileType.pressureObstacle:
         fill = isOpen ? _fillPaint : _blockedPaint;
       case TileType.targetZone:
         fill = _targetPaint;
-      case TileType.hiding:
-        fill = _hidingPaint;
-      case TileType.unstable:
-        fill = _unstablePaint;
       case TileType.empty:
       case TileType.pressurePlate:
-      case TileType.teleport:
         fill = _fillPaint;
+      case TileType.unstable:
+        if (_brownIdleSprite != null) {
+          _renderRotatedSprite(canvas, _brownIdleSprite!);
+        } else {
+          fill = _fillPaint;
+        }
+      case TileType.hiding:
+        final sprite = isOccupied ? _hidingActiveSprite : _hidingIdleSprite;
+        if (sprite != null) {
+          _renderRotatedSprite(canvas, sprite);
+        } else {
+          fill = _fillPaint;
+        }
+      case TileType.teleport:
+        if (_teleportSprite != null) {
+          _renderRotatedSprite(canvas, _teleportSprite!);
+        } else {
+          fill = _fillPaint;
+        }
     }
-    canvas.drawPath(path, fill);
+    if (fill != null) {
+      canvas.drawPath(path, fill);
+    }
 
     // Highlight overlays
     if (isHighlighted) {
@@ -111,18 +141,40 @@ class HexTile extends PositionComponent {
     }
 
     // Draw inner shapes for teleport/plate
-    if (type == TileType.teleport) {
-      canvas.drawCircle(Offset(cx, cy), s / 3, _teleportPaint);
-    } else if (type == TileType.pressurePlate) {
-      canvas.drawCircle(Offset(cx, cy), s / 4, _pressureBorderPaint);
+    if (type == TileType.pressurePlate) {
+      final sprite = isActive ? _bluePlateActiveSprite : _bluePlateIdleSprite;
+      if (sprite != null) {
+        _renderRotatedSprite(canvas, sprite);
+      } else {
+        canvas.drawCircle(Offset(cx, cy), s / 4, _pressureBorderPaint);
+      }
     }
 
     // Border
     if (type == TileType.pressurePlate || type == TileType.pressureObstacle) {
       canvas.drawPath(path, _pressureBorderPaint);
+    } else if (type == TileType.crumbled) {
+      final crumbledBorderPaint = Paint()
+        ..color = const Color.fromRGBO(82, 37, 24, 1.0)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0;
+      canvas.drawPath(path, crumbledBorderPaint);
     } else {
       canvas.drawPath(path, _defaultPaint);
     }
+  }
+
+  void _renderRotatedSprite(Canvas canvas, Sprite sprite) {
+    canvas.save();
+    canvas.translate(size.x / 2, size.y / 2);
+    canvas.rotate(math.pi / 2);
+    // When rotated 90 deg, the widths and heights swap
+    sprite.render(
+      canvas,
+      position: Vector2(-size.y / 2, -size.x / 2),
+      size: Vector2(size.y, size.x),
+    );
+    canvas.restore();
   }
 
   /// Blends all active highlight colors.

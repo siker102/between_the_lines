@@ -4,7 +4,7 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
 
-class CharacterComponent extends PositionComponent with DragCallbacks, DoubleTapCallbacks {
+class CharacterComponent extends PositionComponent with DragCallbacks, DoubleTapCallbacks, HasGameReference {
   final Character model;
   final Function(CharacterComponent) onDragStartCallback;
   final Function(CharacterComponent) onDragUpdateCallback;
@@ -12,6 +12,13 @@ class CharacterComponent extends PositionComponent with DragCallbacks, DoubleTap
   final Function(CharacterComponent) onDoubleTapCallback;
 
   // Visual representation
+  SpriteAnimationComponent? _animComponent;
+  SpriteAnimation? _idleAnim;
+  SpriteAnimation? _walkAnim;
+  double _idleWidth = 0;
+  double _walkWidth = 0;
+  Vector2? _dragStartPosition;
+
   static const double baseRadius = 24.0;
 
   CharacterComponent({
@@ -27,6 +34,47 @@ class CharacterComponent extends PositionComponent with DragCallbacks, DoubleTap
     _updatePositionFromModel();
   }
 
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+
+    final path = model.id == 'c1' ? 'spritesheets/man' : 'spritesheets/woman';
+
+    final idleImage = await game.images.load('$path/idle_anim.png');
+    _idleAnim = SpriteAnimation.fromFrameData(
+      idleImage,
+      SpriteAnimationData.sequenced(
+        amount: 25,
+        amountPerRow: 25,
+        stepTime: 0.06,
+        textureSize: Vector2(144, 216),
+      ),
+    );
+
+    final walkImage = await game.images.load('$path/walk_anim.png');
+    _walkAnim = SpriteAnimation.fromFrameData(
+      walkImage,
+      SpriteAnimationData.sequenced(
+        amount: 25,
+        amountPerRow: 25,
+        stepTime: 0.05,
+        textureSize: Vector2(213, 216),
+      ),
+    );
+
+    const targetHeight = 52.0;
+    _idleWidth = 144.0 * (targetHeight / 216.0);
+    _walkWidth = 213.0 * (targetHeight / 216.0);
+
+    _animComponent = SpriteAnimationComponent(
+      animation: _idleAnim,
+      size: Vector2(_idleWidth, targetHeight),
+      anchor: Anchor.center,
+    );
+    _animComponent!.position = size / 2;
+    add(_animComponent!);
+  }
+
   void _updatePositionFromModel() {
     position = HexMath.gridToScreen(model.position);
     // Center on hex tile. Hex cells are centered locally so no offset needed.
@@ -38,6 +86,13 @@ class CharacterComponent extends PositionComponent with DragCallbacks, DoubleTap
       return;
     }
     super.onDragStart(event);
+    _dragStartPosition = position.clone();
+    if (_animComponent != null) {
+      _animComponent!.animation = _walkAnim;
+      _animComponent!.size.x = _walkWidth;
+      _animComponent!.animationTicker?.reset();
+      _animComponent!.playing = true;
+    }
     onDragStartCallback(this);
   }
 
@@ -45,12 +100,28 @@ class CharacterComponent extends PositionComponent with DragCallbacks, DoubleTap
   void onDragUpdate(DragUpdateEvent event) {
     // The visual position drags along with the pointer
     position += event.localDelta;
+
+    // Flip sprite based on accumulated horizontal displacement from drag start
+    if (_dragStartPosition != null) {
+      final horizontalDisplacement = position.x - _dragStartPosition!.x;
+      if (horizontalDisplacement.abs() > 8.0) {
+        _animComponent?.scale.x = horizontalDisplacement < 0 ? -1 : 1;
+      }
+    }
+
     onDragUpdateCallback(this);
   }
 
   @override
   void onDragEnd(DragEndEvent event) {
     super.onDragEnd(event);
+    _dragStartPosition = null;
+    if (_animComponent != null) {
+      _animComponent!.animation = _idleAnim;
+      _animComponent!.size.x = _idleWidth;
+      _animComponent!.animationTicker?.reset();
+      _animComponent!.playing = true;
+    }
     onDragEndCallback(this);
     // Position might be snapped by the game logic, but if not we snap it back
     // to model.
@@ -68,22 +139,18 @@ class CharacterComponent extends PositionComponent with DragCallbacks, DoubleTap
   // Sync if model position changes outside of drag (e.g., reset)
   void syncWithModel() {
     _updatePositionFromModel();
+    if (_animComponent != null) {
+      if (model.hasMoved) {
+        _animComponent!.paint = Paint()
+          ..colorFilter = ColorFilter.mode(
+            Colors.white.withAlpha(128),
+            BlendMode.modulate,
+          );
+      } else {
+        _animComponent!.paint = Paint();
+      }
+    }
   }
 
-  @override
-  void render(Canvas canvas) {
-    super.render(canvas);
-
-    final color = model.hasMoved ? Colors.grey : Colors.blue;
-    final paint = Paint()..color = color;
-    // Draw simple circle for character
-    canvas.drawCircle(Offset(size.x / 2, size.y / 2), baseRadius, paint);
-
-    // Draw a dark outline for depth
-    final outlinePaint = Paint()
-      ..color = model.hasMoved ? Colors.grey[800]! : Colors.blue[900]!
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-    canvas.drawCircle(Offset(size.x / 2, size.y / 2), baseRadius, outlinePaint);
-  }
+  // Remove render override as children handle drawing
 }

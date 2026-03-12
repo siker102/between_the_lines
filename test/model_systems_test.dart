@@ -103,6 +103,57 @@ void main() {
       // (2, 0) should NOT be reachable because (1, 0) is impassable/blocked
       expect(reachable.containsKey(const GridCoordinate(2, 0)), isFalse);
     });
+
+    test('calculateReachableTiles allows landing on observed hiding tile', () {
+      final grid = HexGrid(-5, 5, -5, 5);
+      grid.setTileType(const GridCoordinate(1, 0), TileType.hiding);
+
+      final character = Character(
+        id: 'c1',
+        position: const GridCoordinate(0, 0),
+        moveRange: 1,
+      );
+
+      final reachable = MovementCalculator.calculateReachableTiles(
+        grid: grid,
+        character: character,
+        allyPositions: {},
+        enemyPositions: {},
+        nextTurnEnemyPositions: {},
+        observedTiles: {const GridCoordinate(1, 0)},
+      );
+
+      expect(reachable[const GridCoordinate(1, 0)], Reachability.walkable);
+    });
+
+    test('calculateReachableTiles does not expand BFS through observed hiding tile', () {
+      final grid = HexGrid(-5, 5, -5, 5);
+      grid.setTileType(const GridCoordinate(1, 0), TileType.hiding);
+
+      final character = Character(
+        id: 'c1',
+        position: const GridCoordinate(0, 0),
+        moveRange: 3,
+      );
+
+      // (1, 0) and (2, 0) are observed; (2, 0) is a normal empty tile
+      final observedTiles = {
+        const GridCoordinate(1, 0),
+        const GridCoordinate(2, 0),
+      };
+
+      final reachable = MovementCalculator.calculateReachableTiles(
+        grid: grid,
+        character: character,
+        allyPositions: {},
+        enemyPositions: {},
+        nextTurnEnemyPositions: {},
+        observedTiles: observedTiles,
+      );
+
+      expect(reachable[const GridCoordinate(1, 0)], Reachability.walkable);
+      expect(reachable.containsKey(const GridCoordinate(2, 0)), isFalse);
+    });
   });
 
   group('VisionCalculator', () {

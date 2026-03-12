@@ -244,6 +244,8 @@ class StealthGame extends FlameGame {
 
     _updateEnemyVisionHighlights();
     _fitCamera();
+    _updateHidingTiles();
+    _updatePressurePlateActive();
   }
 
   ({Vector2 position, double zoom}) _computeCameraFit(int stageIndex) {
@@ -365,7 +367,9 @@ class StealthGame extends FlameGame {
   void _onCharacterDragUpdate(CharacterComponent cc) {}
 
   void _onCharacterDragEnd(CharacterComponent cc) {
-    if (_draggedCharacter == null) return;
+    if (_draggedCharacter == null) {
+      return;
+    }
 
     final worldPos = cc.position;
     final localPos = worldPos - _currentLevelView!.position;
@@ -402,7 +406,13 @@ class StealthGame extends FlameGame {
       if (stageData.specialTiles[finalPos] == TileType.teleport) {
         final destination = stageData.teleportLinks[finalPos];
         if (destination != null) {
-          finalPos = destination;
+          final otherPositions = gameState.characters
+              .where((c) => c.id != cc.model.id)
+              .map((c) => c.position)
+              .toSet();
+          if (!otherPositions.contains(destination)) {
+            finalPos = destination;
+          }
         }
       }
 
@@ -424,11 +434,15 @@ class StealthGame extends FlameGame {
 
     _draggedCharacter = null;
     _currentReachableTiles.clear();
+    _updateHidingTiles();
+    _updatePressurePlateActive();
   }
 
   void _onCharacterDoubleTap(CharacterComponent cc) {
     if (gameState.status != GameStatus.playing) return;
-    if (cc.model.hasMoved) return;
+    if (cc.model.hasMoved) {
+      return;
+    }
 
     final startPos = cc.model.position;
 
@@ -442,13 +456,21 @@ class StealthGame extends FlameGame {
     if (stageData.specialTiles[startPos] == TileType.teleport) {
       final destination = stageData.teleportLinks[startPos];
       if (destination != null) {
-        cc.model.position = destination;
-        cc.syncWithModel();
-        _updatePressurePlates();
+        final otherPositions = gameState.characters
+            .where((c) => c.id != cc.model.id)
+            .map((c) => c.position)
+            .toSet();
+        if (!otherPositions.contains(destination)) {
+          cc.model.position = destination;
+          cc.syncWithModel();
+          _updatePressurePlates();
+        }
       }
     }
 
     cc.model.hasMoved = true;
+    _updateHidingTiles();
+    _updatePressurePlateActive();
     _onTurnCompletion();
   }
 
@@ -459,6 +481,9 @@ class StealthGame extends FlameGame {
 
     if (allMoved && gameState.status == GameStatus.playing) {
       gameState.endTurn();
+      for (final cc in _characterComponents) {
+        cc.syncWithModel();
+      }
       _clearEnemyVisionHighlights();
       for (final ec in _enemyComponents) {
         ec.animateToModel();
@@ -592,7 +617,9 @@ class StealthGame extends FlameGame {
 
   void _spawnGoalIndicators() {
     for (final entry in _currentReachableTiles.entries) {
-      if (entry.value != Reachability.walkable) continue;
+      if (entry.value != Reachability.walkable) {
+        continue;
+      }
 
       final coord = entry.key;
       final tile = _tileComponents[coord];
@@ -652,18 +679,24 @@ class StealthGame extends FlameGame {
 
     // Rebuild with fresh view
     _buildInitialWorld();
+    _updateHidingTiles();
+    _updatePressurePlateActive();
     _levelCounter.text = _stageLabel;
   }
 
   void _updatePressurePlates() {
     final stage = _level.stages[_currentStageIndex];
-    if (stage.tileKeys.isEmpty) return;
+    if (stage.tileKeys.isEmpty) {
+      return;
+    }
 
     final activeKeys = <String>{};
     for (final char in gameState.characters) {
       if (stage.specialTiles[char.position] == TileType.pressurePlate) {
         final key = stage.tileKeys[char.position];
-        if (key != null) activeKeys.add(key);
+        if (key != null) {
+          activeKeys.add(key);
+        }
       }
     }
 
@@ -678,6 +711,36 @@ class StealthGame extends FlameGame {
         final tileCompo = _tileComponents[coord];
         if (tileCompo != null) {
           tileCompo.isOpen = isOpen;
+        }
+      }
+    }
+    _updateHidingTiles();
+    _updatePressurePlateActive();
+  }
+
+  void _updateHidingTiles() {
+    final stage = _level.stages[_currentStageIndex];
+    final occupiedByCharacter = gameState.characters.map((c) => c.position).toSet();
+
+    for (final entry in stage.specialTiles.entries) {
+      if (entry.value == TileType.hiding) {
+        final tile = _tileComponents[entry.key];
+        if (tile != null) {
+          tile.isOccupied = occupiedByCharacter.contains(entry.key);
+        }
+      }
+    }
+  }
+
+  void _updatePressurePlateActive() {
+    final stage = _level.stages[_currentStageIndex];
+    final occupiedByCharacter = gameState.characters.map((c) => c.position).toSet();
+
+    for (final entry in stage.specialTiles.entries) {
+      if (entry.value == TileType.pressurePlate) {
+        final tile = _tileComponents[entry.key];
+        if (tile != null) {
+          tile.isActive = occupiedByCharacter.contains(entry.key);
         }
       }
     }

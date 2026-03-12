@@ -59,6 +59,14 @@ class MovementCalculator {
 
         // Cannot pass through observed tiles (treating them as impassable)
         if (observedTiles.contains(adj)) {
+          // Exception: hiding tiles are still landable even when observed.
+          // The character becomes hidden upon arrival, so it is safe to move there.
+          // We do NOT expand BFS further from this tile (still can't pass through).
+          if (grid.getTileType(adj) == TileType.hiding &&
+              !allyPositions.contains(adj) &&
+              !nextTurnEnemyPositions.contains(adj)) {
+            reachable[adj] = Reachability.walkable;
+          }
           continue;
         }
 

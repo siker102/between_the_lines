@@ -29,3 +29,8 @@ flutter:
     - assets/dialogues/
     - assets/images/character_full_view/
     - assets/images/character_portrait/
+    - assets/images/spritesheets/man/
+    - assets/images/spritesheets/woman/
+    - assets/images/spritesheets/soldier/
+    - assets/images/tiles/
+    - assets/images/overworld/
