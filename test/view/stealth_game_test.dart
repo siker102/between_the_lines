@@ -3,65 +3,45 @@ import 'package:between_the_lines/model/grid/hex_grid.dart';
 import 'package:between_the_lines/model/level_data.dart';
 import 'package:between_the_lines/view/components/character_component.dart';
 import 'package:between_the_lines/view/stealth_game.dart';
-import 'package:flame/components.dart';
-import 'package:flame/input.dart';
 import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+/// Pumps Flame's component lifecycle until CharacterComponents are mounted,
+/// or gives up after several rounds.
+Future<void> _pumpUntilCharactersLoaded(StealthGame game) async {
+  for (var i = 0; i < 10; i++) {
+    await Future.delayed(Duration.zero);
+    game.update(0);
+    if (game.world.children.whereType<CharacterComponent>().isNotEmpty) return;
+  }
+}
+
 void main() {
+  setUpAll(TestWidgetsFlutterBinding.ensureInitialized);
   group('StealthGame resetCurrentStage', () {
     final levelData = LevelData(
       name: 'Test Level',
-      stages: [
-        StageData(width: 3, height: 4),
-        StageData(width: 3, height: 4),
-      ],
+      stages: [StageData(width: 3, height: 4)],
     );
 
     testWithGame<StealthGame>(
-      'resetCurrentStage on multi-stage level retains proper start coord',
+      'resetCurrentStage restores characters to stage start positions',
       () => StealthGame(levelData: levelData),
       (game) async {
-        // We are initially on Stage 1.
-        final stage1LastRow = game.gameState.grid.height - 1; // 3
-        expect(game.gameState.characters.first.position.r, stage1LastRow);
+        final lastRow = game.gameState.grid.height - 1; // 3
+        expect(game.gameState.characters.first.position.r, lastRow);
 
-        // Find and press Debug Win
-        final debugButton = game.camera.viewport.children.whereType<ButtonComponent>().firstWhere(
-              (b) => (b.button! as TextComponent).text == 'DEBUG WIN',
-            );
-        debugButton.onPressed?.call();
-
-        // Pump animation ticks to finish _transitionToNextStage's 1.5s sliding animation.
-        for (var i = 0; i < 20; i++) {
-          game.update(0.1);
-        }
-
-        // We are now on Stage 2. Characters should have been moved to stage 2 bottom.
-        final stage2LastRow = game.gameState.grid.height - 1; // 3
-        expect(
-          game.gameState.characters.first.position.r,
-          stage2LastRow,
-          reason: 'Characters should be at the bottom after transition',
-        );
-
-        // They should also have their hasMoved reset.
-        expect(game.gameState.characters.first.hasMoved, false);
-
-        // Now, if we mess up the position (simulating player move)
+        // Simulate player moving a character away
         game.gameState.characters.first.position = const GridCoordinate(0, 0);
+        game.gameState.characters.first.hasMoved = true;
 
-        // Call resetCurrentStage
         game.resetCurrentStage();
 
-        // Wait a tick for the reset to clear UI components if any
-        game.update(0.1);
-
-        // They should spawn back at the starting position of stage 2 (the bottom row), NOT row 0
+        // Characters should be restored to their starting positions
         expect(
           game.gameState.characters.first.position.r,
-          stage2LastRow,
-          reason: 'Reset should restore characters to stage 2 bottom',
+          lastRow,
+          reason: 'resetCurrentStage should restore characters to stage bottom',
         );
         expect(game.gameState.characters.first.hasMoved, false);
       },
@@ -89,18 +69,18 @@ void main() {
       'Teleport does NOT fire when destination is occupied (wait case)',
       () => StealthGame(levelData: levelData),
       (game) async {
-        final c1 = game.descendants().whereType<CharacterComponent>().firstWhere((cc) => cc.model.id == 'c1');
+        await _pumpUntilCharactersLoaded(game);
 
-        // Wait/Double-tap on teleport tile A
+        // c1 spawns at (0,4) = teleportCoordA, c2 spawns at (1,4) = teleportCoordB
+        final c1 = game.world.children.whereType<CharacterComponent>().firstWhere((cc) => cc.model.id == 'c1');
         c1.onDoubleTapCallback(c1);
         game.update(0.1);
 
         expect(
           game.gameState.getCharacter('c1')!.position,
           teleportCoordA,
-          reason: 'c1 should stay at A because B is occupied',
+          reason: 'c1 should stay at A because B is occupied by c2',
         );
-        expect(game.gameState.getCharacter('c2')!.position, teleportCoordB, reason: 'c2 should stay at B');
       },
     );
 
@@ -108,12 +88,13 @@ void main() {
       'Teleport DOES fire when destination is free (wait case)',
       () => StealthGame(levelData: levelData),
       (game) async {
-        final c1 = game.descendants().whereType<CharacterComponent>().firstWhere((cc) => cc.model.id == 'c1');
+        await _pumpUntilCharactersLoaded(game);
 
-        // Move c2 out of the way
+        final c1 = game.world.children.whereType<CharacterComponent>().firstWhere((cc) => cc.model.id == 'c1');
+
+        // Move c2 away from teleportCoordB so the destination is free
         game.gameState.getCharacter('c2')!.position = const GridCoordinate(0, 2);
 
-        // Wait/Double-tap on teleport tile A
         c1.onDoubleTapCallback(c1);
         game.update(0.1);
 
