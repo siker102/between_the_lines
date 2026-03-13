@@ -68,3 +68,4 @@ $RECYCLE.BIN/
 CLAUDE.md
 .claude/*
 EXECUTION_PLAN.md
+.claude/settings.local.json

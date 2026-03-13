@@ -102,6 +102,9 @@ class CharacterComponent extends PositionComponent with DragCallbacks, DoubleTap
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
+    if (model.hasMoved) {
+      return;
+    }
     // The visual position drags along with the pointer
     position += event.localDelta;
 
@@ -119,6 +122,9 @@ class CharacterComponent extends PositionComponent with DragCallbacks, DoubleTap
   @override
   void onDragEnd(DragEndEvent event) {
     super.onDragEnd(event);
+    if (model.hasMoved) {
+      return;
+    }
     _dragStartPosition = null;
     if (_animComponent != null) {
       _animComponent!.animation = _idleAnim;
