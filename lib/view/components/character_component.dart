@@ -127,9 +127,6 @@ class CharacterComponent extends PositionComponent with DragCallbacks, DoubleTap
       _animComponent!.playing = true;
     }
     onDragEndCallback(this);
-    // Position might be snapped by the game logic, but if not we snap it back
-    // to model.
-    _updatePositionFromModel();
   }
 
   @override

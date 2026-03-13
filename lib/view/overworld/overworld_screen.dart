@@ -396,6 +396,9 @@ class _OverworldScreenState extends State<OverworldScreen> with TickerProviderSt
   }
 
   void _handleTap(TapUpDetails details) {
+    // Ignore taps while an animation is playing
+    if (_moveController.isAnimating) return;
+
     final size = MediaQuery.of(context).size;
     final currentNode = widget.state.currentNode;
     final p = details.localPosition;

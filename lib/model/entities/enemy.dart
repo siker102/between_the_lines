@@ -66,6 +66,13 @@ class Enemy extends Entity {
     if (_currentPathIndex < 0) {
       _currentPathIndex = 0;
     }
+    // Set initial facing toward the next patrol step
+    if (_expandedPath.length >= 2) {
+      final next = nextPosition;
+      if (next != position) {
+        facing = _facingFromDelta(next.q - position.q, next.r - position.r);
+      }
+    }
   }
 
   /// Where this enemy will move next turn (peek only).

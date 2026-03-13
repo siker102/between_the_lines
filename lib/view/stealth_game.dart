@@ -211,8 +211,8 @@ class StealthGame extends FlameGame {
     }
 
     for (final enemy in state.enemies) {
-      paths.add(PatrolPathComponent(enemy: enemy));
       final ec = EnemyComponent(model: enemy);
+      paths.add(PatrolPathComponent(enemy: enemy, enemyComponent: ec));
       _enemyComponents.add(ec);
       enemyComps.add(ec);
     }

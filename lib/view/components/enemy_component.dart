@@ -85,14 +85,12 @@ class EnemyComponent extends PositionComponent with HasGameReference {
     if (_animComponent == null) return;
     // Soldier sprite faces left by default.
     // Flip horizontally when facing rightward directions.
-    if (model.enemyType != EnemyType.radial) {
-      if (model.facing == Direction.right ||
-          model.facing == Direction.topRight ||
-          model.facing == Direction.bottomRight) {
-        _animComponent!.scale.x = -1;
-      } else {
-        _animComponent!.scale.x = 1;
-      }
+    if (model.facing == Direction.right ||
+        model.facing == Direction.topRight ||
+        model.facing == Direction.bottomRight) {
+      _animComponent!.scale.x = -1;
+    } else {
+      _animComponent!.scale.x = 1;
     }
   }
 
