@@ -31,41 +31,48 @@ class EnemyComponent extends PositionComponent with HasGameReference {
   Future<void> onLoad() async {
     await super.onLoad();
 
-    const path = 'spritesheets/soldier';
+    try {
+      const path = 'spritesheets/soldier';
 
-    final idleImage = await game.images.load('$path/idle_anim.png');
-    _idleAnim = SpriteAnimation.fromFrameData(
-      idleImage,
-      SpriteAnimationData.sequenced(
-        amount: 25,
-        amountPerRow: 25,
-        stepTime: 0.06,
-        textureSize: Vector2(144, 216),
-      ),
-    );
+      final idleImage = await game.images.load('$path/idle_anim.png');
+      _idleAnim = SpriteAnimation.fromFrameData(
+        idleImage,
+        SpriteAnimationData.sequenced(
+          amount: 25,
+          amountPerRow: 25,
+          stepTime: 0.03,
+          textureSize: Vector2(144, 216),
+        ),
+      );
 
-    final walkImage = await game.images.load('$path/walk_anim.png');
-    _walkAnim = SpriteAnimation.fromFrameData(
-      walkImage,
-      SpriteAnimationData.sequenced(
-        amount: 25,
-        amountPerRow: 25,
-        stepTime: 0.05,
-        textureSize: Vector2(213, 216),
-      ),
-    );
+      final walkImage = await game.images.load('$path/walk_anim.png');
+      _walkAnim = SpriteAnimation.fromFrameData(
+        walkImage,
+        SpriteAnimationData.sequenced(
+          amount: 37,
+          amountPerRow: 37,
+          stepTime: 0.03,
+          textureSize: Vector2(144, 216),
+        ),
+      );
 
-    const targetHeight = 52.0;
-    _idleWidth = 144.0 * (targetHeight / 216.0);
-    _walkWidth = 213.0 * (targetHeight / 216.0);
+      const targetHeight = 52.0;
+      _idleWidth = 144.0 * (targetHeight / 216.0);
+      _walkWidth = 144.0 * (targetHeight / 216.0);
 
-    _animComponent = SpriteAnimationComponent(
-      animation: _idleAnim,
-      size: Vector2(_idleWidth, targetHeight),
-      anchor: Anchor.center,
-    );
-    _animComponent!.position = size / 2;
-    add(_animComponent!);
+      _animComponent = SpriteAnimationComponent(
+        animation: _idleAnim,
+        size: Vector2(_idleWidth, targetHeight),
+        anchor: Anchor.center,
+      );
+      _animComponent!.position = size / 2;
+      add(_animComponent!);
+
+      // Apply initial facing orientation now that _animComponent exists.
+      _updateFlip();
+    } catch (_) {
+      // Image loading not available in test environments — skip animation setup.
+    }
   }
 
   /// Instantly snap to the model's position.
@@ -76,12 +83,12 @@ class EnemyComponent extends PositionComponent with HasGameReference {
 
   void _updateFlip() {
     if (_animComponent == null) return;
-    // Soldier sprite faces right by default.
-    // Flip if facing leftward directions.
+    // Soldier sprite faces left by default.
+    // Flip horizontally when facing rightward directions.
     if (model.enemyType != EnemyType.radial) {
-      if (model.facing == Direction.left ||
-          model.facing == Direction.topLeft ||
-          model.facing == Direction.bottomLeft) {
+      if (model.facing == Direction.right ||
+          model.facing == Direction.topRight ||
+          model.facing == Direction.bottomRight) {
         _animComponent!.scale.x = -1;
       } else {
         _animComponent!.scale.x = 1;

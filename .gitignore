@@ -66,3 +66,4 @@ $RECYCLE.BIN/
 *.ase
 *.aseprite
 CLAUDE.md
+.claude/*
