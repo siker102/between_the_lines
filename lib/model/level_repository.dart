@@ -8,7 +8,18 @@ import 'package:flutter/services.dart';
 class LevelRepository {
   /// Asset paths for all levels, in order.
   static const List<String> _levelAssets = [
-    'assets/levels/level_1.json',
+    'assets/levels/level_01.json',
+    'assets/levels/level_02.json',
+    'assets/levels/level_03.json',
+    'assets/levels/level_04.json',
+    'assets/levels/level_05.json',
+    'assets/levels/level_06.json',
+    'assets/levels/level_07.json',
+    'assets/levels/level_08.json',
+    'assets/levels/level_09.json',
+    'assets/levels/level_10.json',
+    'assets/levels/level_11.json',
+    'assets/levels/level_12.json',
   ];
 
   /// Asset paths for all chapters, in order.

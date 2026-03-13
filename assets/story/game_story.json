@@ -32,7 +32,7 @@
                 "path_ab",
                 "path_bc"
             ],
-            "bossLevelAssetPath": "assets/levels/level_1.json",
+            "bossLevelAssetPath": "assets/levels/level_03.json",
             "transitionDirection": [
                 0.0,
                 -1.0
@@ -52,7 +52,7 @@
                 "path_de",
                 "path_ef"
             ],
-            "bossLevelAssetPath": "assets/levels/level_1.json",
+            "bossLevelAssetPath": "assets/levels/level_06.json",
             "transitionDirection": [
                 1.0,
                 0.0
@@ -72,7 +72,7 @@
                 "path_gh",
                 "path_hi"
             ],
-            "bossLevelAssetPath": "assets/levels/level_1.json",
+            "bossLevelAssetPath": "assets/levels/level_09.json",
             "transitionDirection": [
                 0.0,
                 1.0
@@ -91,7 +91,8 @@
             "edgeIds": [
                 "path_jk",
                 "path_kl"
-            ]
+            ],
+            "bossLevelAssetPath": "assets/levels/level_12.json"
         }
     ],
     "nodes": [
@@ -198,56 +199,56 @@
             "name": "St. Clement's Lane",
             "fromNodeId": "node_a",
             "toNodeId": "node_b",
-            "levelAssetPath": "assets/levels/level_1.json"
+            "levelAssetPath": "assets/levels/level_01.json"
         },
         {
             "id": "path_bc",
             "name": "Victory Alley",
             "fromNodeId": "node_b",
             "toNodeId": "node_c",
-            "levelAssetPath": "assets/levels/level_1.json"
+            "levelAssetPath": "assets/levels/level_02.json"
         },
         {
             "id": "path_de",
             "name": "Industrial Beltway 04",
             "fromNodeId": "node_d",
             "toNodeId": "node_e",
-            "levelAssetPath": "assets/levels/level_1.json"
+            "levelAssetPath": "assets/levels/level_04.json"
         },
         {
             "id": "path_ef",
             "name": "Ministry Plaza",
             "fromNodeId": "node_e",
             "toNodeId": "node_f",
-            "levelAssetPath": "assets/levels/level_1.json"
+            "levelAssetPath": "assets/levels/level_05.json"
         },
         {
             "id": "path_gh",
             "name": "Inner Party Corridor",
             "fromNodeId": "node_g",
             "toNodeId": "node_h",
-            "levelAssetPath": "assets/levels/level_1.json"
+            "levelAssetPath": "assets/levels/level_07.json"
         },
         {
             "id": "path_hi",
             "name": "The Bridge of Silence",
             "fromNodeId": "node_h",
             "toNodeId": "node_i",
-            "levelAssetPath": "assets/levels/level_1.json"
+            "levelAssetPath": "assets/levels/level_08.json"
         },
         {
             "id": "path_jk",
             "name": "Corridor of Four Fingers",
             "fromNodeId": "node_j",
             "toNodeId": "node_k",
-            "levelAssetPath": "assets/levels/level_1.json"
+            "levelAssetPath": "assets/levels/level_10.json"
         },
         {
             "id": "path_kl",
             "name": "The Vault of Shadows",
             "fromNodeId": "node_k",
             "toNodeId": "node_l",
-            "levelAssetPath": "assets/levels/level_1.json"
+            "levelAssetPath": "assets/levels/level_11.json"
         }
     ]
 }
