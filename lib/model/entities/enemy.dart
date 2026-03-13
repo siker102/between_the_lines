@@ -61,6 +61,7 @@ class Enemy extends Entity {
     _expandedPath = Pathfinding.expandWaypoints(
       grid,
       patrolPath,
+      walkCheck: grid.isEnemyWalkable,
     );
     _currentPathIndex = _expandedPath.indexOf(position);
     if (_currentPathIndex < 0) {

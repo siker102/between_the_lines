@@ -10,8 +10,10 @@ class Pathfinding {
   static List<GridCoordinate> findPath(
     HexGrid grid,
     GridCoordinate from,
-    GridCoordinate to,
-  ) {
+    GridCoordinate to, {
+    bool Function(GridCoordinate)? walkCheck,
+  }) {
+    walkCheck ??= grid.isWalkable;
     if (from == to) {
       return [from];
     }
@@ -30,7 +32,7 @@ class Pathfinding {
         if (!grid.isWithinBounds(neighbor)) {
           continue;
         }
-        if (!grid.isWalkable(neighbor) && neighbor != to) {
+        if (!walkCheck(neighbor) && neighbor != to) {
           continue;
         }
 
@@ -53,8 +55,9 @@ class Pathfinding {
   /// route by chaining [findPath] between consecutive pairs.
   static List<GridCoordinate> expandWaypoints(
     HexGrid grid,
-    List<GridCoordinate> waypoints,
-  ) {
+    List<GridCoordinate> waypoints, {
+    bool Function(GridCoordinate)? walkCheck,
+  }) {
     if (waypoints.length < 2) {
       return List.of(waypoints);
     }
@@ -62,7 +65,7 @@ class Pathfinding {
     final expanded = <GridCoordinate>[];
 
     for (var i = 0; i < waypoints.length - 1; i++) {
-      final segment = findPath(grid, waypoints[i], waypoints[i + 1]);
+      final segment = findPath(grid, waypoints[i], waypoints[i + 1], walkCheck: walkCheck);
       if (segment.isEmpty) {
         continue;
       }

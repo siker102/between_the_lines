@@ -61,4 +61,13 @@ class HexGrid {
         type == TileType.unstable ||
         type == TileType.pressurePlate;
   }
+
+  /// Walkability check for enemy patrol paths.
+  /// Enemies avoid teleport, hiding, and unstable tiles.
+  bool isEnemyWalkable(GridCoordinate coordinate) {
+    final type = getTileType(coordinate);
+    return type == TileType.empty ||
+        type == TileType.targetZone ||
+        type == TileType.pressurePlate;
+  }
 }

@@ -482,6 +482,7 @@ class StealthGame extends FlameGame {
 
     if (allMoved && gameState.status == GameStatus.playing) {
       gameState.endTurn();
+      _updatePressurePlates();
       for (final cc in _characterComponents) {
         cc.syncWithModel();
       }
@@ -695,6 +696,14 @@ class StealthGame extends FlameGame {
     for (final char in gameState.characters) {
       if (stage.specialTiles[char.position] == TileType.pressurePlate) {
         final key = stage.tileKeys[char.position];
+        if (key != null) {
+          activeKeys.add(key);
+        }
+      }
+    }
+    for (final enemy in gameState.enemies) {
+      if (stage.specialTiles[enemy.position] == TileType.pressurePlate) {
+        final key = stage.tileKeys[enemy.position];
         if (key != null) {
           activeKeys.add(key);
         }
