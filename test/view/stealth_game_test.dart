@@ -9,7 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// Pumps Flame's component lifecycle until CharacterComponents are mounted,
 /// or gives up after several rounds.
 Future<void> _pumpUntilCharactersLoaded(StealthGame game) async {
-  for (var i = 0; i < 10; i++) {
+  for (var i = 0; i < 50; i++) {
     await Future.delayed(Duration.zero);
     game.update(0);
     if (game.world.children.whereType<CharacterComponent>().isNotEmpty) return;

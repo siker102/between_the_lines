@@ -469,6 +469,7 @@ class StealthGame extends FlameGame {
     }
 
     cc.model.hasMoved = true;
+    cc.syncWithModel();
     _updateHidingTiles();
     _updatePressurePlateActive();
     _onTurnCompletion();
