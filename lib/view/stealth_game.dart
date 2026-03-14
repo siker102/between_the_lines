@@ -42,6 +42,8 @@ class StealthGame extends FlameGame {
   final List<EnemyComponent> _enemyComponents = [];
   final List<GoalIndicatorComponent> _goalIndicators = [];
 
+  bool showCoordinates = false;
+
   CharacterComponent? _draggedCharacter;
   Map<GridCoordinate, Reachability> _currentReachableTiles = {};
 
@@ -128,6 +130,28 @@ class StealthGame extends FlameGame {
       onPressed: _endTurnForAll,
     );
     camera.viewport.add(endTurnButton);
+
+    // Coordinate Debug Toggle
+    final coordToggleButton = ButtonComponent(
+      button: TextComponent(
+        text: 'COORDS',
+        textRenderer: TextPaint(
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      position: Vector2(410, 60),
+      onPressed: () {
+        showCoordinates = !showCoordinates;
+        for (final tile in _tileComponents.values) {
+          tile.showCoordinates = showCoordinates;
+        }
+      },
+    );
+    camera.viewport.add(coordToggleButton);
   }
 
   String get _stageLabel {
@@ -243,6 +267,7 @@ class StealthGame extends FlameGame {
               keyIndexMap[tileKey]! % _pressureKeyPalette.length];
         }
 
+        tile.showCoordinates = showCoordinates;
         _tileComponents[coord] = tile;
         tiles.add(tile);
       }

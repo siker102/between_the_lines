@@ -16,6 +16,7 @@ class HexTile extends PositionComponent with HasGameReference {
   bool isOpen = false;
   bool isOccupied = false; // used by hiding tiles: true when a character stands here
   bool isActive = false; // used by pressurePlate tiles: true when pressed
+  bool showCoordinates = false; // debug: render (q,r) on tile
   Color? pressureKeyColor; // per-key border color for pressure plates/obstacles
 
   /// Active highlight colors. When both blue and red are
@@ -181,6 +182,28 @@ class HexTile extends PositionComponent with HasGameReference {
       canvas.drawPath(path, crumbledBorderPaint);
     } else {
       canvas.drawPath(path, _defaultPaint);
+    }
+
+    // Debug coordinate label
+    if (showCoordinates) {
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: '${coordinate.q + (coordinate.r / 2).floor()},${coordinate.r}',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      textPainter.paint(
+        canvas,
+        Offset(
+          (size.x - textPainter.width) / 2,
+          (size.y - textPainter.height) / 2,
+        ),
+      );
     }
   }
 

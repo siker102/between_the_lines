@@ -104,7 +104,7 @@ class VisionCalculator {
       // start tile never blocks its own line of sight
       if (pos != start) {
         final type = grid.getTileType(pos);
-        if (type == TileType.blocked || type == TileType.pressureObstacle) {
+        if (type == TileType.blocked || type == TileType.pressureObstacle || type == TileType.crumbled) {
           return false;
         }
       }
