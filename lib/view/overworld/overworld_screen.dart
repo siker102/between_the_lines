@@ -365,9 +365,12 @@ class _OverworldScreenState extends State<OverworldScreen> with TickerProviderSt
               ],
             ),
             child: ClipOval(
-              child: Image.asset(
-                'assets/images/character_portrait/character1_portrait.png',
-                fit: BoxFit.cover,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                child: Image.asset(
+                  'assets/images/character_portrait/character1_portrait.png',
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
           ),
