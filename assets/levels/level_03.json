@@ -6,6 +6,7 @@
       "height": 9,
       "blockedTiles": [
         [0, 4],
+        [6, 0],
         [0, 2],
         [2, 2],
         [3, 0],
@@ -60,6 +61,87 @@
         }
       ]
     },
+
+    {
+      "width": 6,
+      "height": 9,
+      "blockedTiles": [
+        [4, 0],
+        [4, 1],
+        [2, 2],
+        [3, 2],
+        [1, 3],
+        [4, 2],
+        [1, 5],
+        [1, 6],
+        [1, 7],
+        [2, 8],
+        [3, 8]
+      ],
+      "pressurePlates": [
+        {
+          "position": [0, 5],
+          "key": "door1"
+        },
+        {
+          "position": [5, 4],
+          "key": "door2"
+        }
+      ],
+
+      "pressureObstacles": [
+        {
+          "position": [2, 5],
+          "key": "door1"
+        },
+        {
+          "position": [3, 5],
+          "key": "door1"
+        },
+        {
+          "position": [4, 5],
+          "key": "door1"
+        },
+        {
+          "position": [5, 5],
+          "key": "door1"
+        },
+        {
+          "position": [0, 2],
+          "key": "door2"
+        },
+        {
+          "position": [1, 2],
+          "key": "door2"
+        },
+        {
+          "position": [1, 4],
+          "key": "door2"
+        }
+      ],
+      "enemies": [
+        {
+          "id": "e1_s3",
+          "position": [3, 4],
+          "patrolPath": [
+            [2, 4],
+            [4, 4]
+          ],
+          "visionRange": 3,
+          "enemyType": "linear"
+        },
+        {
+          "id": "e1_s3",
+          "position": [0, 1],
+          "patrolPath": [
+            [3, 1],
+            [0, 1]
+          ],
+          "visionRange": 3,
+          "enemyType": "linear"
+        }
+      ]
+    },
     {
       "width": 7,
       "height": 11,
@@ -68,6 +150,8 @@
         [5, 0],
         [6, 0],
 
+        [1, 5],
+
         [2, 0],
         [2, 1],
         [3, 2],
@@ -75,6 +159,7 @@
         [4, 3],
 
         [2, 4],
+        [3, 4],
         [4, 4],
         [5, 4],
 
@@ -84,7 +169,7 @@
         [5, 8],
 
         [3, 9],
-        [3, 10]
+        [4, 10]
       ],
       "pressurePlates": [
         {
@@ -92,7 +177,7 @@
           "key": "door1"
         },
         {
-          "position": [1, 2],
+          "position": [0, 1],
           "key": "door2"
         }
       ],
@@ -153,86 +238,6 @@
           ],
           "visionRange": 6,
           "enemyType": "directional"
-        }
-      ]
-    },
-    {
-      "width": 6,
-      "height": 10,
-      "blockedTiles": [
-        [4, 2],
-        [2, 3],
-        [3, 3],
-        [0, 4],
-        [2, 4],
-        [1, 6],
-        [1, 7],
-        [2, 8],
-        [2, 9],
-        [4, 9],
-        [5, 9]
-      ],
-      "pressurePlates": [
-        {
-          "position": [0, 6],
-          "key": "door1"
-        },
-        {
-          "position": [5, 3],
-          "key": "door2"
-        }
-      ],
-
-      "pressureObstacles": [
-        {
-          "position": [2, 6],
-          "key": "door1"
-        },
-        {
-          "position": [3, 6],
-          "key": "door1"
-        },
-        {
-          "position": [4, 6],
-          "key": "door1"
-        },
-        {
-          "position": [5, 6],
-          "key": "door1"
-        },
-        {
-          "position": [0, 3],
-          "key": "door2"
-        },
-        {
-          "position": [1, 3],
-          "key": "door2"
-        },
-        {
-          "position": [1, 5],
-          "key": "door2"
-        }
-      ],
-      "enemies": [
-        {
-          "id": "e1_s3",
-          "position": [3, 5],
-          "patrolPath": [
-            [2, 5],
-            [4, 5]
-          ],
-          "visionRange": 3,
-          "enemyType": "linear"
-        },
-        {
-          "id": "e1_s3",
-          "position": [0, 2],
-          "patrolPath": [
-            [3, 2],
-            [0, 2]
-          ],
-          "visionRange": 3,
-          "enemyType": "linear"
         }
       ]
     }

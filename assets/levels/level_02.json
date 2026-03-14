@@ -81,7 +81,9 @@
         [4, 3],
         [0, 4],
         [1, 4],
+        [3, 2],
         [3, 4],
+        [2, 3],
         [4, 5],
         [4, 6],
         [4, 7],
@@ -89,12 +91,16 @@
       ],
       "pressurePlates": [
         {
+          "position": [0, 5],
+          "key": "door1"
+        },
+        {
           "position": [1, 2],
           "key": "door2"
         },
         {
-          "position": [0, 5],
-          "key": "door1"
+          "position": [4, 2],
+          "key": "door3"
         }
       ],
       "pressureObstacles": [
@@ -113,6 +119,27 @@
         {
           "position": [3, 3],
           "key": "door2"
+        },
+
+        {
+          "position": [0, 1],
+          "key": "door3"
+        },
+        {
+          "position": [1, 1],
+          "key": "door3"
+        },
+        {
+          "position": [2, 1],
+          "key": "door3"
+        },
+        {
+          "position": [3, 1],
+          "key": "door3"
+        },
+        {
+          "position": [4, 1],
+          "key": "door3"
         }
       ]
     }
