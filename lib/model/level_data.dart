@@ -152,12 +152,24 @@ class StageData {
       orElse: () => EnemyType.directional,
     );
 
+    final facingStr = json['facing'] as String?;
+    final facing = facingStr != null
+        ? Direction.values.firstWhere(
+            (d) => d.name == facingStr,
+            orElse: () => Direction.right,
+          )
+        : Direction.right;
+
+    final turnDirection = json['turnDirection'] as int? ?? 1;
+
     return Enemy(
       id: json['id'] as String,
       position: GridCoordinate(posCol - (posRow / 2).floor(), posRow),
       patrolPath: patrolPath,
       visionRange: json['visionRange'] as int? ?? 4,
       enemyType: enemyType,
+      facing: facing,
+      turnDirection: turnDirection,
     );
   }
 }

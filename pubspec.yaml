@@ -32,5 +32,6 @@ flutter:
     - assets/images/spritesheets/man/
     - assets/images/spritesheets/woman/
     - assets/images/spritesheets/soldier/
+    - assets/images/spritesheets/camera/
     - assets/images/tiles/
     - assets/images/overworld/

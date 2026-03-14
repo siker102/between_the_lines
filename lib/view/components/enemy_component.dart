@@ -33,47 +33,81 @@ class EnemyComponent extends PositionComponent with HasGameReference {
     await super.onLoad();
 
     try {
-      const path = 'spritesheets/soldier';
-
-      final idleImage = await game.images.load('$path/idle_anim.png');
-      _idleAnim = SpriteAnimation.fromFrameData(
-        idleImage,
-        SpriteAnimationData.range(
-          amount: 25,
-          amountPerRow: 25,
-          stepTimes: List.filled(14, _stepTime),
-          textureSize: Vector2(144, 216), start: 0, end: 13,
-        ),
-      );
-
-      final walkImage = await game.images.load('$path/walk_anim.png');
-      _walkAnim = SpriteAnimation.fromFrameData(
-        walkImage,
-        SpriteAnimationData.range(
-          amount: 37,
-          amountPerRow: 37,
-          stepTimes: List.filled(20, _stepTime),
-          textureSize: Vector2(144, 216), start: 0, end: 19,
-        ),
-      );
-
-      const targetHeight = 52.0;
-      _idleWidth = 144.0 * (targetHeight / 216.0);
-      _walkWidth = 144.0 * (targetHeight / 216.0);
-
-      _animComponent = SpriteAnimationComponent(
-        animation: _idleAnim,
-        size: Vector2(_idleWidth, targetHeight),
-        anchor: Anchor.center,
-      );
-      _animComponent!.position = size / 2;
-      add(_animComponent!);
+      if (model.enemyType == EnemyType.camera) {
+        await _loadCameraSprite();
+      } else {
+        await _loadSoldierSprite();
+      }
 
       // Apply initial facing orientation now that _animComponent exists.
       _updateFlip();
     } catch (_) {
       // Image loading not available in test environments — skip animation setup.
     }
+  }
+
+  Future<void> _loadSoldierSprite() async {
+    const path = 'spritesheets/soldier';
+
+    final idleImage = await game.images.load('$path/idle_anim.png');
+    _idleAnim = SpriteAnimation.fromFrameData(
+      idleImage,
+      SpriteAnimationData.range(
+        amount: 25,
+        amountPerRow: 25,
+        stepTimes: List.filled(14, _stepTime),
+        textureSize: Vector2(144, 216), start: 0, end: 13,
+      ),
+    );
+
+    final walkImage = await game.images.load('$path/walk_anim.png');
+    _walkAnim = SpriteAnimation.fromFrameData(
+      walkImage,
+      SpriteAnimationData.range(
+        amount: 37,
+        amountPerRow: 37,
+        stepTimes: List.filled(20, _stepTime),
+        textureSize: Vector2(144, 216), start: 0, end: 19,
+      ),
+    );
+
+    const targetHeight = 52.0;
+    _idleWidth = 144.0 * (targetHeight / 216.0);
+    _walkWidth = 144.0 * (targetHeight / 216.0);
+
+    _animComponent = SpriteAnimationComponent(
+      animation: _idleAnim,
+      size: Vector2(_idleWidth, targetHeight),
+      anchor: Anchor.center,
+    );
+    _animComponent!.position = size / 2;
+    add(_animComponent!);
+  }
+
+  Future<void> _loadCameraSprite() async {
+    final image = await game.images.load('spritesheets/camera/camera_animation.png');
+    _idleAnim = SpriteAnimation.fromFrameData(
+      image,
+      SpriteAnimationData.range(
+        amount: 25,
+        amountPerRow: 25,
+        stepTimes: List.filled(25, _stepTime),
+        textureSize: Vector2(144, 144), start: 0, end: 24,
+      ),
+    );
+    _walkAnim = _idleAnim;
+
+    const targetHeight = 40.0;
+    _idleWidth = 144.0 * (targetHeight / 144.0);
+    _walkWidth = _idleWidth;
+
+    _animComponent = SpriteAnimationComponent(
+      animation: _idleAnim,
+      size: Vector2(_idleWidth, targetHeight),
+      anchor: Anchor.center,
+    );
+    _animComponent!.position = size / 2;
+    add(_animComponent!);
   }
 
   /// Instantly snap to the model's position.
@@ -83,7 +117,13 @@ class EnemyComponent extends PositionComponent with HasGameReference {
   }
 
   void _updateFlip() {
-    if (_animComponent == null) return;
+    if (_animComponent == null) {
+      return;
+    }
+    // Camera sprite is symmetric — no flipping needed.
+    if (model.enemyType == EnemyType.camera) {
+      return;
+    }
     // Soldier sprite faces left by default.
     // Flip horizontally when facing rightward directions.
     if (model.facing == Direction.right ||
@@ -98,6 +138,11 @@ class EnemyComponent extends PositionComponent with HasGameReference {
   /// Smoothly animate to the model's current position
   /// over time (handled in [update]).
   void animateToModel() {
+    // Camera doesn't move — nothing to animate.
+    if (model.enemyType == EnemyType.camera) {
+      return;
+    }
+
     if (_animComponent != null) {
       _animComponent!.animation = _walkAnim;
       _animComponent!.size.x = _walkWidth;

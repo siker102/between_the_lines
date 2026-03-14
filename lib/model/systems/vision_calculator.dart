@@ -15,6 +15,8 @@ class VisionCalculator {
         return _calculateRadialVision(grid, enemy);
       case EnemyType.directional:
         return _calculateDirectionalVision(grid, enemy);
+      case EnemyType.camera:
+        return _calculateCameraVision(grid, enemy);
     }
   }
 
@@ -90,6 +92,56 @@ class VisionCalculator {
         }
       }
     }
+    return visible;
+  }
+
+  // ── Camera: fixed 4-tile pattern ──
+
+  static Set<GridCoordinate> _calculateCameraVision(
+    HexGrid grid,
+    Enemy enemy,
+  ) {
+    final visible = <GridCoordinate>{};
+    final start = enemy.position;
+    final dir = enemy.facing;
+
+    const order = [
+      Direction.right,
+      Direction.topRight,
+      Direction.topLeft,
+      Direction.left,
+      Direction.bottomLeft,
+      Direction.bottomRight,
+    ];
+
+    final dirIdx = order.indexOf(dir);
+    final leftDir = order[(dirIdx - 1 + 6) % 6];
+    final rightDir = order[(dirIdx + 1) % 6];
+
+    // Front 1: one step ahead
+    final front1 = _stepInDirection(start, dir, 1);
+    if (grid.isWithinBounds(front1) && _hasLineOfSight(grid, start, front1)) {
+      visible.add(front1);
+
+      // Front 2: two steps ahead
+      final front2 = _stepInDirection(start, dir, 2);
+      if (grid.isWithinBounds(front2) && _hasLineOfSight(grid, start, front2)) {
+        visible.add(front2);
+      }
+
+      // Front-Left: from front1, one step in the left-adjacent direction
+      final frontLeft = _stepInDirection(front1, leftDir, 1);
+      if (grid.isWithinBounds(frontLeft) && _hasLineOfSight(grid, start, frontLeft)) {
+        visible.add(frontLeft);
+      }
+
+      // Front-Right: from front1, one step in the right-adjacent direction
+      final frontRight = _stepInDirection(front1, rightDir, 1);
+      if (grid.isWithinBounds(frontRight) && _hasLineOfSight(grid, start, frontRight)) {
+        visible.add(frontRight);
+      }
+    }
+
     return visible;
   }
 

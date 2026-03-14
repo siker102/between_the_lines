@@ -22,12 +22,18 @@ enum EnemyType {
 
   /// Sees a cone in the facing direction (default).
   directional,
+
+  /// Stationary camera that rotates facing each turn.
+  camera,
 }
 
 class Enemy extends Entity {
   final int visionRange;
   final EnemyType enemyType;
   final List<GridCoordinate> patrolPath;
+
+  /// +1 = clockwise, -1 = counter-clockwise. Used by camera enemies.
+  final int turnDirection;
 
   List<GridCoordinate> _expandedPath = [];
   int _currentPathIndex = 0;
@@ -42,6 +48,7 @@ class Enemy extends Entity {
     this.visionRange = 4,
     this.facing = Direction.right,
     this.enemyType = EnemyType.directional,
+    this.turnDirection = 1,
   });
 
   /// Creates a fresh copy with the original construction parameters.
@@ -51,6 +58,8 @@ class Enemy extends Entity {
         patrolPath: List.of(patrolPath),
         visionRange: visionRange,
         enemyType: enemyType,
+        facing: facing,
+        turnDirection: turnDirection,
       );
 
   /// The full tile-by-tile route.
@@ -67,8 +76,8 @@ class Enemy extends Entity {
     if (_currentPathIndex < 0) {
       _currentPathIndex = 0;
     }
-    // Set initial facing toward the next patrol step
-    if (_expandedPath.length >= 2) {
+    // Set initial facing toward the next patrol step (skip for camera — uses constructor-defined facing)
+    if (enemyType != EnemyType.camera && _expandedPath.length >= 2) {
       final next = nextPosition;
       if (next != position) {
         facing = _facingFromDelta(next.q - position.q, next.r - position.r);
@@ -78,6 +87,9 @@ class Enemy extends Entity {
 
   /// Where this enemy will move next turn (peek only).
   GridCoordinate get nextPosition {
+    if (enemyType == EnemyType.camera) {
+      return position;
+    }
     if (_expandedPath.length < 2) {
       return position;
     }
@@ -99,6 +111,9 @@ class Enemy extends Entity {
 
   /// Facing direction after the next move.
   Direction get nextFacing {
+    if (enemyType == EnemyType.camera) {
+      return _rotateDirection(facing, turnDirection);
+    }
     final next = nextPosition;
     if (next == position) {
       return facing;
@@ -111,6 +126,12 @@ class Enemy extends Entity {
 
   /// Advance one tile along the expanded path.
   void advancePatrol() {
+    // Camera enemies rotate in place instead of moving
+    if (enemyType == EnemyType.camera) {
+      facing = _rotateDirection(facing, turnDirection);
+      return;
+    }
+
     if (_expandedPath.length < 2) {
       return;
     }
@@ -142,6 +163,20 @@ class Enemy extends Entity {
       newPos.q - oldPos.q,
       newPos.r - oldPos.r,
     );
+  }
+
+  static Direction _rotateDirection(Direction dir, int turnDir) {
+    const order = [
+      Direction.right,
+      Direction.topRight,
+      Direction.topLeft,
+      Direction.left,
+      Direction.bottomLeft,
+      Direction.bottomRight,
+    ];
+    final idx = order.indexOf(dir);
+    final newIdx = (idx + turnDir) % order.length;
+    return order[newIdx < 0 ? newIdx + order.length : newIdx];
   }
 
   static Direction _facingFromDelta(int dq, int dr) {

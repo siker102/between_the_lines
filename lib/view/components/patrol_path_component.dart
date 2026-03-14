@@ -18,6 +18,45 @@ class PatrolPathComponent extends PositionComponent {
   @override
   void render(Canvas canvas) {
     super.render(canvas);
+
+    // Camera: stationary — show only a chevron indicating next facing direction
+    if (enemy.enemyType == EnemyType.camera) {
+      Vector2 pos;
+      if (enemyComponent != null) {
+        pos = enemyComponent!.position;
+      } else {
+        pos = HexMath.gridToScreen(enemy.position);
+      }
+
+      final facingAngle = _dirAngle(enemy.nextFacing);
+      const chevronLen = 14.0;
+      const chevronSpread = 0.5;
+
+      final chevronLeft = Offset(
+        pos.x - cos(facingAngle - chevronSpread) * chevronLen,
+        pos.y - sin(facingAngle - chevronSpread) * chevronLen,
+      );
+      final chevronRight = Offset(
+        pos.x - cos(facingAngle + chevronSpread) * chevronLen,
+        pos.y - sin(facingAngle + chevronSpread) * chevronLen,
+      );
+
+      final chevronPaint = Paint()
+        ..color = const Color(0x99FFFFFF)
+        ..strokeWidth = 2.5
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round;
+
+      final chevronPath = Path()
+        ..moveTo(chevronLeft.dx, chevronLeft.dy)
+        ..lineTo(pos.x, pos.y)
+        ..lineTo(chevronRight.dx, chevronRight.dy);
+
+      canvas.drawPath(chevronPath, chevronPaint);
+      return;
+    }
+
     if (enemy.position == enemy.nextPosition) return;
 
     // Use the visual position of the enemy sprite (animated), not the model position
