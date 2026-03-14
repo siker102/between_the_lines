@@ -9,6 +9,7 @@ class CharacterDisplay extends StatelessWidget {
     required this.assetPath,
     required this.isActive,
     required this.alignment,
+    required this.flip,
     super.key,
   });
 
@@ -20,6 +21,9 @@ class CharacterDisplay extends StatelessWidget {
 
   /// Horizontal alignment: -1.0 for left, 1.0 for right.
   final Alignment alignment;
+
+  /// Whether to flip the image horizontally, for dialogue conversation.
+  final bool flip;
 
   @override
   Widget build(BuildContext context) {
@@ -44,10 +48,13 @@ class CharacterDisplay extends StatelessWidget {
                     Colors.black.withValues(alpha: 0.4),
                     BlendMode.srcATop,
                   ),
-            child: Image.asset(
-              assetPath,
-              height: MediaQuery.of(context).size.height * 0.7,
-              fit: BoxFit.contain,
+            child: Transform.flip(
+              flipX: flip,
+              child: Image.asset(
+                assetPath,
+                height: MediaQuery.of(context).size.height * 0.7,
+                fit: BoxFit.contain,
+              ),
             ),
           ),
         ),

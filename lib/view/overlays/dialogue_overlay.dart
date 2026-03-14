@@ -127,8 +127,8 @@ class _DialogueOverlayState extends State<DialogueOverlay>
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.black.withValues(alpha: 0.3),
-                Colors.black.withValues(alpha: 0.8),
+                const Color(0xFF0D1117).withAlpha(150),
+                const Color(0xFF0D1117).withAlpha(250),
               ],
             ),
           ),
@@ -175,13 +175,14 @@ class _DialogueOverlayState extends State<DialogueOverlay>
 
       widgets.add(
         Positioned(
-          left: slot == _CharacterSlot.left ? -20 : null,
-          right: slot == _CharacterSlot.right ? -20 : null,
-          bottom: 0,
+          left: slot == _CharacterSlot.left ? 20 : null,
+          right: slot == _CharacterSlot.right ? 20 : null,
+          bottom: 10,
           child: CharacterDisplay(
             assetPath: profile.fullBodyAsset,
             isActive: isActive,
             alignment: alignment,
+            flip: slot == _CharacterSlot.left,
           ),
         ),
       );
