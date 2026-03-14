@@ -16,6 +16,7 @@ class HexTile extends PositionComponent with HasGameReference {
   bool isOpen = false;
   bool isOccupied = false; // used by hiding tiles: true when a character stands here
   bool isActive = false; // used by pressurePlate tiles: true when pressed
+  Color? pressureKeyColor; // per-key border color for pressure plates/obstacles
 
   /// Active highlight colors. When both blue and red are
   /// present, the tile renders as purple.
@@ -150,13 +151,28 @@ class HexTile extends PositionComponent with HasGameReference {
       if (sprite != null) {
         _renderRotatedSprite(canvas, sprite);
       } else {
-        canvas.drawCircle(Offset(cx, cy), s / 4, _pressureBorderPaint);
+        canvas.drawCircle(
+        Offset(cx, cy),
+        s / 4,
+        pressureKeyColor != null
+            ? (Paint()
+              ..color = pressureKeyColor!
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2.0)
+            : _pressureBorderPaint,
+      );
       }
     }
 
     // Border
     if (type == TileType.pressurePlate || type == TileType.pressureObstacle) {
-      canvas.drawPath(path, _pressureBorderPaint);
+      final borderPaint = pressureKeyColor != null
+          ? (Paint()
+            ..color = pressureKeyColor!
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.0)
+          : _pressureBorderPaint;
+      canvas.drawPath(path, borderPaint);
     } else if (type == TileType.crumbled) {
       final crumbledBorderPaint = Paint()
         ..color = const Color.fromRGBO(82, 37, 24, 1.0)

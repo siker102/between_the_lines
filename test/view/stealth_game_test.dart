@@ -49,8 +49,8 @@ void main() {
   });
 
   group('StealthGame teleport', () {
-    const teleportCoordA = GridCoordinate(0, 4);
-    const teleportCoordB = GridCoordinate(1, 4);
+    const teleportCoordA = GridCoordinate(-1, 4);
+    const teleportCoordB = GridCoordinate(0, 4);
     final stageData = StageData(
       width: 3,
       height: 5,
@@ -71,7 +71,7 @@ void main() {
       (game) async {
         await _pumpUntilCharactersLoaded(game);
 
-        // c1 spawns at (0,4) = teleportCoordA, c2 spawns at (1,4) = teleportCoordB
+        // c1 spawns at (-1,4) = teleportCoordA, c2 spawns at (0,4) = teleportCoordB
         final c1 = game.world.children.whereType<CharacterComponent>().firstWhere((cc) => cc.model.id == 'c1');
         c1.onDoubleTapCallback(c1);
         game.update(0.1);

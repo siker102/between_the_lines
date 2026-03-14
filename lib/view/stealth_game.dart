@@ -18,6 +18,14 @@ import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
 
+const _pressureKeyPalette = [
+  Color(0xFF00A7A7), // teal
+  Color(0xFFFF8C00), // orange
+  Color(0xFFCC44CC), // magenta
+  Color(0xFFCCCC00), // gold
+  Color(0xFF3399FF), // cyan-blue
+];
+
 class StealthGame extends FlameGame {
   late GameState gameState;
   final LevelData _level;
@@ -103,6 +111,23 @@ class StealthGame extends FlameGame {
       onPressed: resetCurrentStage,
     );
     camera.viewport.add(restartButton);
+
+    // End Turn Button
+    final endTurnButton = ButtonComponent(
+      button: TextComponent(
+        text: 'END TURN',
+        textRenderer: TextPaint(
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      position: Vector2(280, 60),
+      onPressed: _endTurnForAll,
+    );
+    camera.viewport.add(endTurnButton);
   }
 
   String get _stageLabel {
@@ -192,6 +217,12 @@ class StealthGame extends FlameGame {
     _tileComponents.clear();
     _enemyComponents.clear();
 
+    final stage = _level.stages[_currentStageIndex];
+    final keyIndexMap = <String, int>{};
+    for (final key in stage.tileKeys.values.toSet()) {
+      keyIndexMap.putIfAbsent(key, () => keyIndexMap.length);
+    }
+
     final w = state.grid.width;
     final h = state.grid.height;
 
@@ -205,6 +236,13 @@ class StealthGame extends FlameGame {
           coordinate: coord,
           type: type,
         );
+
+        final tileKey = stage.tileKeys[coord];
+        if (tileKey != null) {
+          tile.pressureKeyColor = _pressureKeyPalette[
+              keyIndexMap[tileKey]! % _pressureKeyPalette.length];
+        }
+
         _tileComponents[coord] = tile;
         tiles.add(tile);
       }
@@ -303,6 +341,18 @@ class StealthGame extends FlameGame {
               stage.tileKeys[otherChar.position] == key) {
             keyStillActive = true;
             break;
+          }
+        }
+
+        // Also check if any enemy is on a same-key pressurePlate
+        if (!keyStillActive) {
+          for (final enemy in gameState.enemies) {
+            if (stage.specialTiles[enemy.position] ==
+                    TileType.pressurePlate &&
+                stage.tileKeys[enemy.position] == key) {
+              keyStillActive = true;
+              break;
+            }
           }
         }
 
@@ -478,6 +528,49 @@ class StealthGame extends FlameGame {
 
     cc.model.hasMoved = true;
     cc.syncWithModel();
+    _updateHidingTiles();
+    _updatePressurePlateActive();
+    _onTurnCompletion();
+  }
+
+  void _endTurnForAll() {
+    if (gameState.status != GameStatus.playing) return;
+
+    final unmovedComponents = _characterComponents
+        .where((cc) => !cc.model.hasMoved)
+        .toList();
+
+    if (unmovedComponents.isEmpty) return;
+
+    for (final cc in unmovedComponents) {
+      final startPos = cc.model.position;
+
+      // Skip characters on unstable tiles — they must move manually
+      if (gameState.grid.getTileType(startPos) == TileType.unstable) {
+        continue;
+      }
+
+      // Teleportation on Wait (mirrors _onCharacterDoubleTap logic)
+      final stageData = _level.stages[_currentStageIndex];
+      if (stageData.specialTiles[startPos] == TileType.teleport) {
+        final destination = stageData.teleportLinks[startPos];
+        if (destination != null) {
+          final otherPositions = gameState.characters
+              .where((c) => c.id != cc.model.id)
+              .map((c) => c.position)
+              .toSet();
+          if (!otherPositions.contains(destination)) {
+            cc.model.position = destination;
+            cc.syncWithModel();
+            _updatePressurePlates();
+          }
+        }
+      }
+
+      cc.model.hasMoved = true;
+      cc.syncWithModel();
+    }
+
     _updateHidingTiles();
     _updatePressurePlateActive();
     _onTurnCompletion();
@@ -738,6 +831,21 @@ class StealthGame extends FlameGame {
         }
       }
     }
+
+    // Check for characters crushed by closing obstacles
+    for (final char in gameState.characters) {
+      final charTileType = stage.specialTiles[char.position];
+      if (charTileType == TileType.pressureObstacle) {
+        final key = stage.tileKeys[char.position];
+        if (key != null && !activeKeys.contains(key)) {
+          gameState.status = GameStatus.lost;
+          gameState.statusMessage = 'A character was crushed!';
+          _showFailurePopup();
+          return;
+        }
+      }
+    }
+
     _updateHidingTiles();
     _updatePressurePlateActive();
   }
