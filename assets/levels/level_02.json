@@ -1,270 +1,118 @@
 {
-  "name": "Level 1",
+  "name": "Level 2",
   "stages": [
     {
-      "width": 6,
-      "height": 13,
+      "width": 4,
+      "height": 7,
       "blockedTiles": [
-        [
-          0,
-          4
-        ],
-        [
-          1,
-          4
-        ],
-        [
-          4,
-          4
-        ],
-        [
-          5,
-          4
-        ],
-        [
-          2,
-          7
-        ],
-        [
-          3,
-          7
-        ]
-      ],
-      "hidingTiles": [
-        [
-          2,
-          10
-        ],
-        [
-          4,
-          8
-        ]
-      ],
-      "unstableTiles": [
-        [
-          4,
-          10
-        ],
-        [
-          3,
-          11
-        ]
+        [3, 4],
+        [3, 5]
       ],
       "pressurePlates": [
         {
-          "position": [
-            0,
-            10
-          ],
+          "position": [0, 5],
+          "key": "door1"
+        },
+        {
+          "position": [3, 2],
           "key": "door1"
         }
       ],
       "pressureObstacles": [
         {
-          "position": [
-            2,
-            9
-          ],
+          "position": [0, 3],
           "key": "door1"
         },
         {
-          "position": [
-            3,
-            9
-          ],
+          "position": [1, 3],
           "key": "door1"
-        }
-      ],
-      "teleports": [
-        {
-          "from": [
-            5,
-            11
-          ],
-          "to": [
-            5,
-            5
-          ]
-        }
-      ],
-      "enemies": [
-        {
-          "id": "e1_s1",
-          "position": [
-            0,
-            6
-          ],
-          "patrolPath": [
-            [
-              0,
-              6
-            ],
-            [
-              5,
-              6
-            ]
-          ],
-          "visionRange": 3,
-          "enemyType": "directional"
         },
         {
-          "id": "e2_s1",
-          "position": [
-            5,
-            3
-          ],
-          "patrolPath": [
-            [
-              5,
-              3
-            ],
-            [
-              0,
-              3
-            ]
-          ],
-          "visionRange": 4,
-          "enemyType": "linear"
+          "position": [2, 3],
+          "key": "door1"
         },
         {
-          "id": "e3_s1",
-          "position": [
-            2,
-            8
-          ],
-          "patrolPath": [
-            [
-              2,
-              8
-            ],
-            [
-              3,
-              8
-            ]
-          ],
-          "visionRange": 2,
-          "enemyType": "radial"
+          "position": [3, 3],
+          "key": "door1"
         }
       ]
     },
     {
-      "width": 6,
-      "height": 13,
+      "width": 4,
+      "height": 7,
       "blockedTiles": [
-        [
-          3,
-          0
-        ],
-        [
-          1,
-          3
-        ],
-        [
-          2,
-          3
-        ],
-        [
-          3,
-          3
-        ],
-        [
-          4,
-          3
-        ],
-        [
-          0,
-          8
-        ],
-        [
-          5,
-          8
-        ]
+        [0, 4],
+        [1, 5],
+        [3, 5]
       ],
-      "enemies": [
+      "pressurePlates": [
         {
-          "id": "e1_s2",
-          "position": [
-            1,
-            5
-          ],
-          "patrolPath": [
-            [
-              1,
-              5
-            ],
-            [
-              4,
-              5
-            ]
-          ],
-          "visionRange": 3,
-          "enemyType": "directional"
+          "position": [1, 2],
+          "key": "door2"
+        },
+        {
+          "position": [0, 5],
+          "key": "door1"
+        }
+      ],
+      "pressureObstacles": [
+        {
+          "position": [1, 3],
+          "key": "door1"
+        },
+        {
+          "position": [2, 3],
+          "key": "door1"
+        },
+        {
+          "position": [3, 3],
+          "key": "door1"
+        },
+        {
+          "position": [1, 4],
+          "key": "door2"
         }
       ]
     },
     {
-      "width": 8,
-      "height": 13,
+      "width": 5,
+      "height": 9,
       "blockedTiles": [
-        [
-          3,
-          12
-        ],
-        [
-          2,
-          5
-        ],
-        [
-          5,
-          5
-        ],
-        [
-          3,
-          8
-        ],
-        [
-          4,
-          8
-        ]
+        [4, 3],
+        [0, 4],
+        [1, 4],
+        [3, 4],
+        [4, 5],
+        [4, 6],
+        [4, 7],
+        [4, 8]
       ],
-      "enemies": [
+      "pressurePlates": [
         {
-          "id": "e1_s3",
-          "position": [
-            1,
-            4
-          ],
-          "patrolPath": [
-            [
-              1,
-              4
-            ],
-            [
-              6,
-              4
-            ]
-          ],
-          "visionRange": 3,
-          "enemyType": "directional"
+          "position": [1, 2],
+          "key": "door2"
         },
         {
-          "id": "e2_s3",
-          "position": [
-            6,
-            9
-          ],
-          "patrolPath": [
-            [
-              6,
-              9
-            ],
-            [
-              1,
-              9
-            ]
-          ],
-          "visionRange": 3,
-          "enemyType": "linear"
+          "position": [0, 5],
+          "key": "door1"
+        }
+      ],
+      "pressureObstacles": [
+        {
+          "position": [1, 5],
+          "key": "door1"
+        },
+        {
+          "position": [2, 5],
+          "key": "door1"
+        },
+        {
+          "position": [3, 5],
+          "key": "door1"
+        },
+        {
+          "position": [3, 3],
+          "key": "door2"
         }
       ]
     }

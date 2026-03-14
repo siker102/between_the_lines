@@ -145,11 +145,11 @@ class StealthGame extends FlameGame {
       characters = [
         Character(
           id: 'c1',
-          position: GridCoordinate(2 - (lastRow / 2).floor(), lastRow),
+          position: GridCoordinate(1 - (lastRow / 2).floor(), lastRow),
         ),
         Character(
           id: 'c2',
-          position: GridCoordinate(3 - (lastRow / 2).floor(), lastRow),
+          position: GridCoordinate(2 - (lastRow / 2).floor(), lastRow),
         ),
       ];
     } else {
@@ -257,7 +257,8 @@ class StealthGame extends FlameGame {
     // Screen positions of the grid corners
     final topLeft = HexMath.gridToScreen(const GridCoordinate(0, 0));
     final qBottomRight = lastCol - (lastRow / 2).floor();
-    final bottomRight = HexMath.gridToScreen(GridCoordinate(qBottomRight, lastRow));
+    final bottomRight =
+        HexMath.gridToScreen(GridCoordinate(qBottomRight, lastRow));
 
     // Center the camera on the grid midpoint (with half-tile padding)
     final center = (topLeft + bottomRight) / 2;
@@ -297,7 +298,8 @@ class StealthGame extends FlameGame {
         var keyStillActive = false;
         for (final otherChar in gameState.characters) {
           if (otherChar.id == cc.model.id) continue;
-          if (stage.specialTiles[otherChar.position] == TileType.pressurePlate &&
+          if (stage.specialTiles[otherChar.position] ==
+                  TileType.pressurePlate &&
               stage.tileKeys[otherChar.position] == key) {
             keyStillActive = true;
             break;
@@ -307,7 +309,8 @@ class StealthGame extends FlameGame {
         if (!keyStillActive) {
           var someoneOnObstacle = false;
           for (final anyChar in gameState.characters) {
-            if (stage.specialTiles[anyChar.position] == TileType.pressureObstacle &&
+            if (stage.specialTiles[anyChar.position] ==
+                    TileType.pressureObstacle &&
                 stage.tileKeys[anyChar.position] == key) {
               someoneOnObstacle = true;
               break;
@@ -325,14 +328,19 @@ class StealthGame extends FlameGame {
       }
     }
 
-    final allyPositions = gameState.characters.where((c) => c.id != cc.model.id).map((c) => c.position).toSet();
+    final allyPositions = gameState.characters
+        .where((c) => c.id != cc.model.id)
+        .map((c) => c.position)
+        .toSet();
     final enemyPositions = gameState.enemies.map((e) => e.position).toSet();
-    final nextTurnEnemyPositions = gameState.enemies.map((e) => e.nextPosition).toSet();
+    final nextTurnEnemyPositions =
+        gameState.enemies.map((e) => e.nextPosition).toSet();
 
     // Calculate all currently observed tiles
     final observedTiles = <GridCoordinate>{};
     for (final enemy in gameState.enemies) {
-      observedTiles.addAll(VisionCalculator.calculateVision(gameState.grid, enemy));
+      observedTiles
+          .addAll(VisionCalculator.calculateVision(gameState.grid, enemy));
     }
 
     _currentReachableTiles = MovementCalculator.calculateReachableTiles(
@@ -534,7 +542,8 @@ class StealthGame extends FlameGame {
 
     // The bottom-left of the next stage (offset col 0, last row)
     final qAtLastRow = 0 - (nextLastRow / 2).floor();
-    final bottomPos = HexMath.gridToScreen(GridCoordinate(qAtLastRow, nextLastRow));
+    final bottomPos =
+        HexMath.gridToScreen(GridCoordinate(qAtLastRow, nextLastRow));
     final topPos = HexMath.gridToScreen(const GridCoordinate(0, 0));
     final offset = bottomPos - topPos;
 
@@ -578,7 +587,9 @@ class StealthGame extends FlameGame {
             cc.syncWithModel();
           }
 
-          gameState.status = originalStatus == GameStatus.won ? GameStatus.playing : originalStatus;
+          gameState.status = originalStatus == GameStatus.won
+              ? GameStatus.playing
+              : originalStatus;
           _updateEnemyVisionHighlights();
           _fitCamera(); // Keep this as a final safety check/snap to ensure exactness natively
         },
@@ -667,7 +678,9 @@ class StealthGame extends FlameGame {
     final grid = stage.createGrid();
 
     // Restore characters to their saved starting positions
-    final characters = _stageStartPositions.entries.map((e) => Character(id: e.key, position: e.value)).toList();
+    final characters = _stageStartPositions.entries
+        .map((e) => Character(id: e.key, position: e.value))
+        .toList();
 
     gameState = GameState(
       grid: grid,
@@ -716,7 +729,8 @@ class StealthGame extends FlameGame {
         final key = stage.tileKeys[coord];
         final isOpen = key != null && activeKeys.contains(key);
 
-        gameState.grid.setTileType(coord, isOpen ? TileType.empty : TileType.pressureObstacle);
+        gameState.grid.setTileType(
+            coord, isOpen ? TileType.empty : TileType.pressureObstacle);
 
         final tileCompo = _tileComponents[coord];
         if (tileCompo != null) {
@@ -730,7 +744,8 @@ class StealthGame extends FlameGame {
 
   void _updateHidingTiles() {
     final stage = _level.stages[_currentStageIndex];
-    final occupiedByCharacter = gameState.characters.map((c) => c.position).toSet();
+    final occupiedByCharacter =
+        gameState.characters.map((c) => c.position).toSet();
 
     for (final entry in stage.specialTiles.entries) {
       if (entry.value == TileType.hiding) {
@@ -744,7 +759,8 @@ class StealthGame extends FlameGame {
 
   void _updatePressurePlateActive() {
     final stage = _level.stages[_currentStageIndex];
-    final occupiedByCharacter = gameState.characters.map((c) => c.position).toSet();
+    final occupiedByCharacter =
+        gameState.characters.map((c) => c.position).toSet();
 
     for (final entry in stage.specialTiles.entries) {
       if (entry.value == TileType.pressurePlate) {
