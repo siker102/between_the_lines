@@ -609,6 +609,7 @@ class StealthGame extends FlameGame {
     if (allMoved && gameState.status == GameStatus.playing) {
       gameState.endTurn();
       _updatePressurePlates();
+      gameState.updateStatus();
       for (final cc in _characterComponents) {
         cc.syncWithModel();
       }
