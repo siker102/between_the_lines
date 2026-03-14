@@ -8,6 +8,7 @@ class EnemyComponent extends PositionComponent with HasGameReference {
   final Enemy model;
 
   static const double baseRadius = 24.0;
+  static const double _stepTime = 0.05;
 
   // Animation state
   SpriteAnimationComponent? _animComponent;
@@ -37,22 +38,22 @@ class EnemyComponent extends PositionComponent with HasGameReference {
       final idleImage = await game.images.load('$path/idle_anim.png');
       _idleAnim = SpriteAnimation.fromFrameData(
         idleImage,
-        SpriteAnimationData.sequenced(
+        SpriteAnimationData.range(
           amount: 25,
           amountPerRow: 25,
-          stepTime: 0.03,
-          textureSize: Vector2(144, 216),
+          stepTimes: List.filled(14, _stepTime),
+          textureSize: Vector2(144, 216), start: 0, end: 13,
         ),
       );
 
       final walkImage = await game.images.load('$path/walk_anim.png');
       _walkAnim = SpriteAnimation.fromFrameData(
         walkImage,
-        SpriteAnimationData.sequenced(
+        SpriteAnimationData.range(
           amount: 37,
           amountPerRow: 37,
-          stepTime: 0.03,
-          textureSize: Vector2(144, 216),
+          stepTimes: List.filled(20, _stepTime),
+          textureSize: Vector2(144, 216), start: 0, end: 19,
         ),
       );
 
