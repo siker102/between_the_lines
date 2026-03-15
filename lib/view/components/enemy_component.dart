@@ -85,14 +85,14 @@ class EnemyComponent extends PositionComponent with HasGameReference {
   }
 
   Future<void> _loadCameraSprite() async {
-    final image = await game.images.load('spritesheets/camera/camera_animation.png');
+    final image = await game.images.load('spritesheets/camera/camera2_animation.png');
     _idleAnim = SpriteAnimation.fromFrameData(
       image,
       SpriteAnimationData.range(
-        amount: 25,
-        amountPerRow: 25,
-        stepTimes: List.filled(25, _stepTime),
-        textureSize: Vector2(144, 144), start: 0, end: 24,
+        amount: 37,
+        amountPerRow: 37,
+        stepTimes: List.filled(37, _stepTime),
+        textureSize: Vector2(144, 144), start: 0, end: 36,
       ),
     );
     _walkAnim = _idleAnim;
@@ -120,24 +120,27 @@ class EnemyComponent extends PositionComponent with HasGameReference {
     if (_animComponent == null) {
       return;
     }
-    // Camera sprite is symmetric — no flipping needed.
-    if (model.enemyType == EnemyType.camera) {
-      return;
-    }
-    // Soldier sprite faces left by default.
-    // Flip horizontally when facing rightward directions.
-    if (model.facing == Direction.right ||
+
+    final facingRight = model.facing == Direction.right ||
         model.facing == Direction.topRight ||
-        model.facing == Direction.bottomRight) {
-      _animComponent!.scale.x = -1;
+        model.facing == Direction.bottomRight;
+
+    if (model.enemyType == EnemyType.camera) {
+      // Camera sprite faces right by default.
+      // Flip horizontally when facing leftward directions.
+      _animComponent!.scale.x = facingRight ? 1 : -1;
     } else {
-      _animComponent!.scale.x = 1;
+      // Soldier sprite faces left by default.
+      // Flip horizontally when facing rightward directions.
+      _animComponent!.scale.x = facingRight ? -1 : 1;
     }
   }
 
   /// Smoothly animate to the model's current position
   /// over time (handled in [update]).
   void animateToModel() {
+    _updateFlip();
+
     // Camera doesn't move — nothing to animate.
     if (model.enemyType == EnemyType.camera) {
       return;
@@ -150,7 +153,6 @@ class EnemyComponent extends PositionComponent with HasGameReference {
       _animComponent!.playing = true;
     }
     _animTarget = HexMath.gridToScreen(model.position);
-    _updateFlip();
   }
 
   @override

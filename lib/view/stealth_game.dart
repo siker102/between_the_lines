@@ -50,6 +50,14 @@ class StealthGame extends FlameGame {
   // Snapshot of character positions at stage start (for reset)
   Map<String, GridCoordinate> _stageStartPositions = {};
 
+  // Turn counter (cumulative across all stages in this level)
+  int _totalTurnCount = 0;
+  int _stageStartTurnCount = 0;
+  TextComponent? _turnCounter;
+
+  /// The total number of turns taken so far (for testing / external reads).
+  int get totalTurnCount => _totalTurnCount;
+
   StealthGame({
     required LevelData levelData,
     this.onLevelComplete,
@@ -57,6 +65,15 @@ class StealthGame extends FlameGame {
 
   @override
   Color backgroundColor() => Colors.black87;
+
+  @override
+  void onGameResize(Vector2 size) {
+    super.onGameResize(size);
+    final tc = _turnCounter;
+    if (tc != null && tc.isMounted) {
+      tc.position = Vector2(size.x - 20, 20);
+    }
+  }
 
   @override
   Future<void> onLoad() async {
@@ -79,6 +96,20 @@ class StealthGame extends FlameGame {
       ),
     );
     camera.viewport.add(_levelCounter);
+
+    _turnCounter = TextComponent(
+      text: _turnLabel,
+      anchor: Anchor.topRight,
+      position: Vector2(size.x - 20, 20),
+      textRenderer: TextPaint(
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+    camera.viewport.add(_turnCounter!);
 
     // Debug Button
     final debugButton = ButtonComponent(
@@ -154,6 +185,8 @@ class StealthGame extends FlameGame {
     camera.viewport.add(coordToggleButton);
   }
 
+  String get _turnLabel => 'Turns: $_totalTurnCount';
+
   String get _stageLabel {
     if (_level.stages.length == 1) {
       return _level.name;
@@ -227,6 +260,8 @@ class StealthGame extends FlameGame {
     _stageStartPositions = {
       for (final c in characters) c.id: c.position,
     };
+
+    _stageStartTurnCount = _totalTurnCount;
 
     _updatePressurePlates();
   }
@@ -607,6 +642,8 @@ class StealthGame extends FlameGame {
     final allMoved = gameState.characters.every((c) => c.hasMoved);
 
     if (allMoved && gameState.status == GameStatus.playing) {
+      _totalTurnCount++;
+      _turnCounter?.text = _turnLabel;
       gameState.endTurn();
       _updatePressurePlates();
       gameState.updateStatus();
@@ -725,6 +762,7 @@ class StealthGame extends FlameGame {
     }
 
     _levelCounter.text = _stageLabel;
+    _turnCounter?.text = _turnLabel;
   }
 
   // ── Highlighting ──
@@ -781,6 +819,7 @@ class StealthGame extends FlameGame {
   /// Resets the current stage to its initial state.
   void resetCurrentStage() {
     overlays.remove('failure');
+    _totalTurnCount = _stageStartTurnCount;
 
     // Tear down old view
     _currentLevelView?.removeFromParent();
@@ -816,6 +855,7 @@ class StealthGame extends FlameGame {
     _updateHidingTiles();
     _updatePressurePlateActive();
     _levelCounter.text = _stageLabel;
+    _turnCounter?.text = _turnLabel;
   }
 
   void _updatePressurePlates() {
