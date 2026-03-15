@@ -262,7 +262,7 @@ class _OverworldScreenState extends State<OverworldScreen>
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: const BoxDecoration(
         image: DecorationImage(
-            image: AssetImage('images/overworld/frame.png'),
+            image: AssetImage('assets/images/overworld/frame.png'),
             fit: BoxFit.fill,),
       ),
       child: Column(

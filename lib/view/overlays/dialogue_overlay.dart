@@ -200,7 +200,7 @@ class _DialogueOverlayState extends State<DialogueOverlay>
       margin: const EdgeInsets.all(8),
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       decoration: const BoxDecoration(
-        image: DecorationImage(image: AssetImage('images/overworld/page.png'), fit: BoxFit.fill),
+        image: DecorationImage(image: AssetImage('assets/images/overworld/page.png'), fit: BoxFit.fill),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
