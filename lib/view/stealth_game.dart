@@ -17,6 +17,7 @@ import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 
 const _pressureKeyPalette = [
@@ -30,7 +31,10 @@ const _pressureKeyPalette = [
 class StealthGame extends FlameGame {
   late GameState gameState;
   final LevelData _level;
+  final int _districtTier;
   final void Function(int totalTurns)? onLevelComplete;
+  static bool _musicEnabled = true;
+  late TextComponent _musicLabel;
 
   // Stage tracking (within this single level)
   int _currentStageIndex = 0;
@@ -61,10 +65,18 @@ class StealthGame extends FlameGame {
 
   StealthGame({
     required LevelData levelData,
+    required int districtTier,
     this.onLevelComplete,
     int initialTurnCount = 0,
   }) : _level = levelData,
+       _districtTier = districtTier,
        _totalTurnCount = initialTurnCount;
+
+  @override
+  void onRemove() {
+    FlameAudio.bgm.stop();
+    super.onRemove();
+  }
 
   @override
   Color backgroundColor() => Colors.black87;
@@ -84,6 +96,10 @@ class StealthGame extends FlameGame {
     _initializeStage();
     _buildInitialWorld();
     _setupUI();
+    FlameAudio.bgm.play('music/district_$_districtTier.wav', volume: 1.0);
+    if (!_musicEnabled) {
+      FlameAudio.bgm.pause();
+    }
   }
 
   void _setupUI() {
@@ -192,6 +208,25 @@ class StealthGame extends FlameGame {
       },
     );
     camera.viewport.add(coordToggleButton);
+
+    // Music Toggle
+    _musicLabel = TextComponent(
+      text: _musicEnabled ? 'MUSIC: ON' : 'MUSIC: OFF',
+      textRenderer: TextPaint(
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          fontFamily: appFontFamily,
+        ),
+      ),
+    );
+    final musicButton = ButtonComponent(
+      button: _musicLabel,
+      position: Vector2(530, 60),
+      onPressed: _toggleMusic,
+    );
+    camera.viewport.add(musicButton);
   }
 
   String get _turnLabel => 'Turns: $_totalTurnCount';
@@ -201,6 +236,17 @@ class StealthGame extends FlameGame {
       return _level.name;
     }
     return '${_level.name} - Stage ${_currentStageIndex + 1}';
+  }
+
+  void _toggleMusic() {
+    _musicEnabled = !_musicEnabled;
+    if (_musicEnabled) {
+      FlameAudio.bgm.resume();
+      _musicLabel.text = 'MUSIC: ON';
+    } else {
+      FlameAudio.bgm.pause();
+      _musicLabel.text = 'MUSIC: OFF';
+    }
   }
 
   void _debugWin() {

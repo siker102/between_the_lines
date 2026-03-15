@@ -25,6 +25,7 @@ dev_dependencies:
 flutter:
   uses-material-design: false
   assets:
+    - assets/audio/music/
     - assets/levels/
     - assets/story/
     - assets/dialogues/

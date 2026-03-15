@@ -27,7 +27,7 @@ void main() {
 
     testWithGame<StealthGame>(
       'resetCurrentStage restores characters to stage start positions',
-      () => StealthGame(levelData: levelData),
+      () => StealthGame(levelData: levelData, districtTier: 1),
       (game) async {
         final lastRow = game.gameState.grid.height - 1; // 3
         expect(game.gameState.characters.first.position.r, lastRow);
@@ -68,7 +68,7 @@ void main() {
 
     testWithGame<StealthGame>(
       'Teleport does NOT fire when destination is occupied (wait case)',
-      () => StealthGame(levelData: levelData),
+      () => StealthGame(levelData: levelData, districtTier: 1),
       (game) async {
         await _pumpUntilCharactersLoaded(game);
 
@@ -87,7 +87,7 @@ void main() {
 
     testWithGame<StealthGame>(
       'Teleport DOES fire when destination is free (wait case)',
-      () => StealthGame(levelData: levelData),
+      () => StealthGame(levelData: levelData, districtTier: 1),
       (game) async {
         await _pumpUntilCharactersLoaded(game);
 

@@ -38,7 +38,7 @@ void main() {
   group('Turn counter', () {
     testWithGame<StealthGame>(
       'starts at zero',
-      () => StealthGame(levelData: levelData),
+      () => StealthGame(levelData: levelData, districtTier: 1),
       (game) async {
         await _pumpUntilCharactersLoaded(game);
         expect(game.totalTurnCount, 0);
@@ -47,7 +47,7 @@ void main() {
 
     testWithGame<StealthGame>(
       'increments after all characters complete a turn',
-      () => StealthGame(levelData: levelData),
+      () => StealthGame(levelData: levelData, districtTier: 1),
       (game) async {
         await _pumpUntilCharactersLoaded(game);
 
@@ -64,7 +64,7 @@ void main() {
 
     testWithGame<StealthGame>(
       'does not increment when only some characters have moved',
-      () => StealthGame(levelData: levelData),
+      () => StealthGame(levelData: levelData, districtTier: 1),
       (game) async {
         await _pumpUntilCharactersLoaded(game);
 
@@ -83,7 +83,7 @@ void main() {
   group('Turn counter reset on restart button', () {
     testWithGame<StealthGame>(
       'resetCurrentStage restores turn count to stage start value',
-      () => StealthGame(levelData: levelData),
+      () => StealthGame(levelData: levelData, districtTier: 1),
       (game) async {
         await _pumpUntilCharactersLoaded(game);
 
@@ -104,7 +104,7 @@ void main() {
 
     testWithGame<StealthGame>(
       'can play turns again after restart and counter resumes from reset value',
-      () => StealthGame(levelData: levelData),
+      () => StealthGame(levelData: levelData, districtTier: 1),
       (game) async {
         await _pumpUntilCharactersLoaded(game);
 
@@ -129,7 +129,7 @@ void main() {
     // so we simulate that flow: play some turns, force a loss, then reset.
     testWithGame<StealthGame>(
       'retry after failure resets turn count to stage start',
-      () => StealthGame(levelData: levelData),
+      () => StealthGame(levelData: levelData, districtTier: 1),
       (game) async {
         await _pumpUntilCharactersLoaded(game);
 
@@ -152,7 +152,7 @@ void main() {
 
     testWithGame<StealthGame>(
       'can accumulate turns again after failure retry',
-      () => StealthGame(levelData: levelData),
+      () => StealthGame(levelData: levelData, districtTier: 1),
       (game) async {
         await _pumpUntilCharactersLoaded(game);
 
@@ -179,7 +179,7 @@ void main() {
   group('Turn counter with failure overlay (resetCurrentStage)', () {
     testWithGame<StealthGame>(
       'multiple restart cycles maintain correct count',
-      () => StealthGame(levelData: levelData),
+      () => StealthGame(levelData: levelData, districtTier: 1),
       (game) async {
         await _pumpUntilCharactersLoaded(game);
 

@@ -98,6 +98,7 @@ class _GameShellState extends State<GameShell> {
       levelData: levelData,
       onLevelComplete: (turns) => _onLevelComplete(edge, turns),
       initialTurnCount: _globalTurnCount,
+      districtTier: _overworldState.currentDistrict.tier,
     );
 
     setState(() {
@@ -165,6 +166,7 @@ class _GameShellState extends State<GameShell> {
       levelData: levelData,
       onLevelComplete: _onBossLevelComplete,
       initialTurnCount: _globalTurnCount,
+      districtTier: _overworldState.currentDistrict.tier,
     );
 
     setState(() {
