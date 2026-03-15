@@ -43,7 +43,7 @@ class HexTile extends PositionComponent with HasGameReference {
   static final Paint _pressureBorderPaint = Paint()
     ..color = const Color.fromRGBO(0, 167, 167, 1.0)
     ..style = PaintingStyle.stroke
-    ..strokeWidth = 2.0;
+    ..strokeWidth = 3.0;
 
   // Sprites
   Sprite? _teleportSprite;
@@ -158,7 +158,7 @@ class HexTile extends PositionComponent with HasGameReference {
           ? (Paint()
             ..color = pressureKeyColor!
             ..style = PaintingStyle.stroke
-            ..strokeWidth = 2.0)
+            ..strokeWidth = 3.0)
           : _pressureBorderPaint;
       canvas.drawPath(path, borderPaint);
     } else if (type == TileType.crumbled) {
