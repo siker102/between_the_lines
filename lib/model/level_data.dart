@@ -83,6 +83,7 @@ class StageData {
     }
 
     if (json['teleports'] != null) {
+      var teleportKeyIndex = 0;
       for (final tpData in json['teleports'] as List) {
         final map = tpData as Map<String, dynamic>;
         final from = parseCoord(map['from'] as List);
@@ -94,6 +95,12 @@ class StageData {
 
         specialTiles[to] = TileType.teleport;
         teleportLinks[to] = from;
+
+        // Assign shared key so paired teleports get the same border color
+        final key = 'teleport_$teleportKeyIndex';
+        tileKeys[from] = key;
+        tileKeys[to] = key;
+        teleportKeyIndex++;
       }
     }
 

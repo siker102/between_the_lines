@@ -153,7 +153,7 @@ class HexTile extends PositionComponent with HasGameReference {
     }
 
     // Border
-    if (type == TileType.pressurePlate || type == TileType.pressureObstacle) {
+    if (type == TileType.pressurePlate || type == TileType.pressureObstacle || type == TileType.teleport) {
       final borderPaint = pressureKeyColor != null
           ? (Paint()
             ..color = pressureKeyColor!
