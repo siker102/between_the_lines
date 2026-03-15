@@ -35,6 +35,7 @@ class _GameShellState extends State<GameShell> {
   // Data
   late OverworldState _overworldState;
   StealthGame? _currentGame;
+  int _globalTurnCount = 0;
 
   // For dialogue flow
   DialogueData? _pendingDialogue;
@@ -90,7 +91,8 @@ class _GameShellState extends State<GameShell> {
 
     final game = StealthGame(
       levelData: levelData,
-      onLevelComplete: () => _onLevelComplete(edge),
+      onLevelComplete: (turns) => _onLevelComplete(edge, turns),
+      initialTurnCount: _globalTurnCount,
     );
 
     setState(() {
@@ -99,7 +101,8 @@ class _GameShellState extends State<GameShell> {
     });
   }
 
-  void _onLevelComplete(StoryEdge edge) {
+  void _onLevelComplete(StoryEdge edge, int totalTurns) {
+    _globalTurnCount = totalTurns;
     // Complete the edge and advance to the destination node.
     _overworldState.completeCurrentNode();
     _overworldState.completeEdge(edge.id);
@@ -156,6 +159,7 @@ class _GameShellState extends State<GameShell> {
     final game = StealthGame(
       levelData: levelData,
       onLevelComplete: _onBossLevelComplete,
+      initialTurnCount: _globalTurnCount,
     );
 
     setState(() {
@@ -165,7 +169,8 @@ class _GameShellState extends State<GameShell> {
     });
   }
 
-  void _onBossLevelComplete() {
+  void _onBossLevelComplete(int totalTurns) {
+    _globalTurnCount = totalTurns;
     _overworldState.completeBossLevel();
     setState(() {
       _currentGame = null;

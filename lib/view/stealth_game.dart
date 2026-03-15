@@ -29,7 +29,7 @@ const _pressureKeyPalette = [
 class StealthGame extends FlameGame {
   late GameState gameState;
   final LevelData _level;
-  final VoidCallback? onLevelComplete;
+  final void Function(int totalTurns)? onLevelComplete;
 
   // Stage tracking (within this single level)
   int _currentStageIndex = 0;
@@ -50,8 +50,8 @@ class StealthGame extends FlameGame {
   // Snapshot of character positions at stage start (for reset)
   Map<String, GridCoordinate> _stageStartPositions = {};
 
-  // Turn counter (cumulative across all stages in this level)
-  int _totalTurnCount = 0;
+  // Turn counter (cumulative across all stages and levels)
+  int _totalTurnCount;
   int _stageStartTurnCount = 0;
   TextComponent? _turnCounter;
 
@@ -61,7 +61,9 @@ class StealthGame extends FlameGame {
   StealthGame({
     required LevelData levelData,
     this.onLevelComplete,
-  }) : _level = levelData;
+    int initialTurnCount = 0,
+  }) : _level = levelData,
+       _totalTurnCount = initialTurnCount;
 
   @override
   Color backgroundColor() => Colors.black87;
@@ -641,20 +643,22 @@ class StealthGame extends FlameGame {
 
     final allMoved = gameState.characters.every((c) => c.hasMoved);
 
-    if (allMoved && gameState.status == GameStatus.playing) {
+    if (allMoved) {
       _totalTurnCount++;
       _turnCounter?.text = _turnLabel;
-      gameState.endTurn();
-      _updatePressurePlates();
-      gameState.updateStatus();
-      for (final cc in _characterComponents) {
-        cc.syncWithModel();
+      if (gameState.status == GameStatus.playing) {
+        gameState.endTurn();
+        _updatePressurePlates();
+        gameState.updateStatus();
+        for (final cc in _characterComponents) {
+          cc.syncWithModel();
+        }
+        _clearEnemyVisionHighlights();
+        for (final ec in _enemyComponents) {
+          ec.animateToModel();
+        }
+        _updateEnemyVisionHighlights();
       }
-      _clearEnemyVisionHighlights();
-      for (final ec in _enemyComponents) {
-        ec.animateToModel();
-      }
-      _updateEnemyVisionHighlights();
     } else {
       _updateEnemyVisionHighlights();
     }
@@ -676,7 +680,7 @@ class StealthGame extends FlameGame {
     } else {
       // All stages cleared — notify the shell.
       debugPrint('LEVEL CLEARED!');
-      onLevelComplete?.call();
+      onLevelComplete?.call(_totalTurnCount);
       return;
     }
 
