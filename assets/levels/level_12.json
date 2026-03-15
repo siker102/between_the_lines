@@ -123,65 +123,6 @@
       ]
     },
     {
-      "width": 6,
-      "height": 13,
-      "blockedTiles": [
-        [ 3, 0 ],
-        [ 1, 3 ],
-        [ 2, 3 ],
-        [ 3, 3 ],
-        [ 4, 3 ],
-        [ 0, 8 ],
-        [ 5, 8 ]
-      ],
-      "enemies": [
-        {
-          "id": "e1_s2",
-          "position": [ 1, 5 ],
-          "patrolPath": [
-            [ 1, 5 ],
-            [ 4, 5 ]
-          ],
-          "visionRange": 3,
-          "enemyType": "directional"
-        }
-      ]
-    },
-    {
-      "width": 8,
-      "height": 13,
-      "blockedTiles": [
-        [ 3, 12 ],
-        [ 2, 5 ],
-        [ 5, 5 ],
-        [ 3, 8 ],
-        [ 4, 8 ]
-      ],
-      "enemies": [
-        {
-          "id": "e1_s3",
-          "position": [ 1, 4 ],
-          "patrolPath": [
-            [ 1, 4 ],
-            [ 6, 4 ]
-          ],
-          "visionRange": 3,
-          "enemyType": "directional"
-        },
-        {
-          "id": "e2_s3",
-          "position": [ 6, 9 ],
-          "patrolPath": [
-            [ 6, 9 ],
-            [ 1, 9 ]
-          ],
-          "visionRange": 3,
-          "enemyType": "linear"
-        }
-      ]
-    }
-    ,
-    {
       "width": 11,
       "height": 11,
       "blockedTiles": [
