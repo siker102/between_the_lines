@@ -26,7 +26,8 @@ class OverworldScreen extends StatefulWidget {
   State<OverworldScreen> createState() => _OverworldScreenState();
 }
 
-class _OverworldScreenState extends State<OverworldScreen> with TickerProviderStateMixin {
+class _OverworldScreenState extends State<OverworldScreen>
+    with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late AnimationController _moveController;
   Animation<Offset>? _moveAnimation;
@@ -91,7 +92,8 @@ class _OverworldScreenState extends State<OverworldScreen> with TickerProviderSt
     final endOffset = Offset(toNode.x, toNode.y);
 
     setState(() {
-      _moveAnimation = Tween<Offset>(begin: startOffset, end: endOffset).animate(
+      _moveAnimation =
+          Tween<Offset>(begin: startOffset, end: endOffset).animate(
         CurvedAnimation(
           parent: _moveController,
           curve: Curves.easeInOut,
@@ -138,10 +140,12 @@ class _OverworldScreenState extends State<OverworldScreen> with TickerProviderSt
     var t = (tx < ty ? tx : ty);
     if (t == double.infinity || t < 0) t = 0.3; // Fallback
 
-    final startOffset = Offset(endOffset.dx - direction.dx * t, endOffset.dy - direction.dy * t);
+    final startOffset = Offset(
+        endOffset.dx - direction.dx * t, endOffset.dy - direction.dy * t);
 
     setState(() {
-      _moveAnimation = Tween<Offset>(begin: startOffset, end: endOffset).animate(
+      _moveAnimation =
+          Tween<Offset>(begin: startOffset, end: endOffset).animate(
         CurvedAnimation(
           parent: _moveController,
           curve: Curves.easeInOut,
@@ -149,7 +153,8 @@ class _OverworldScreenState extends State<OverworldScreen> with TickerProviderSt
       );
     });
 
-    _moveController.duration = Duration(milliseconds: (t / 0.35 * 1500).round().clamp(100, 3000));
+    _moveController.duration =
+        Duration(milliseconds: (t / 0.35 * 1500).round().clamp(100, 3000));
     _moveController.forward(from: 0).then((_) {
       if (mounted) {
         widget.onArrivalAnimationComplete?.call();
@@ -254,17 +259,11 @@ class _OverworldScreenState extends State<OverworldScreen> with TickerProviderSt
 
   Widget _buildDistrictTitle(DistrictData district) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 10,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: _tierColor.withValues(alpha: 0.4),
-          width: 1.5,
-        ),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+            image: AssetImage('images/overworld/frame.png'),
+            fit: BoxFit.fill,),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -388,7 +387,9 @@ class _OverworldScreenState extends State<OverworldScreen> with TickerProviderSt
     final l2 = (start - end).distanceSquared;
     var t = 1.0;
     if (l2 > 0) {
-      t = ((p.dx - start.dx) * (end.dx - start.dx) + (p.dy - start.dy) * (end.dy - start.dy)) / l2;
+      t = ((p.dx - start.dx) * (end.dx - start.dx) +
+              (p.dy - start.dy) * (end.dy - start.dy)) /
+          l2;
       t = t.clamp(0.0, 1.0);
     }
     final projection = Offset(
@@ -411,7 +412,8 @@ class _OverworldScreenState extends State<OverworldScreen> with TickerProviderSt
       final direction = district.transitionDirection;
       if (direction == null) return;
 
-      final startPos = Offset(currentNode.x * size.width, currentNode.y * size.height);
+      final startPos =
+          Offset(currentNode.x * size.width, currentNode.y * size.height);
       final destPos = Offset(
         (currentNode.x + direction.dx * 1.5) * size.width,
         (currentNode.y + direction.dy * 1.5) * size.height,
@@ -419,10 +421,12 @@ class _OverworldScreenState extends State<OverworldScreen> with TickerProviderSt
 
       if (_pointToLineDistance(p, startPos, destPos) < 45) {
         final startOffset = Offset(currentNode.x, currentNode.y);
-        final destOffset = Offset(currentNode.x + direction.dx * 1.5, currentNode.y + direction.dy * 1.5);
+        final destOffset = Offset(currentNode.x + direction.dx * 1.5,
+            currentNode.y + direction.dy * 1.5);
 
         setState(() {
-          _moveAnimation = Tween<Offset>(begin: startOffset, end: destOffset).animate(
+          _moveAnimation =
+              Tween<Offset>(begin: startOffset, end: destOffset).animate(
             CurvedAnimation(
               parent: _moveController,
               curve: Curves.easeInOut,
@@ -435,7 +439,10 @@ class _OverworldScreenState extends State<OverworldScreen> with TickerProviderSt
           if (transitionTriggered || _moveAnimation == null) return;
           final pos = _moveAnimation!.value;
           const padding = 0.12; // When node padding crosses the line
-          if (pos.dx <= -padding || pos.dx >= 1.0 + padding || pos.dy <= -padding || pos.dy >= 1.0 + padding) {
+          if (pos.dx <= -padding ||
+              pos.dx >= 1.0 + padding ||
+              pos.dy <= -padding ||
+              pos.dy >= 1.0 + padding) {
             transitionTriggered = true;
             _moveAnimation?.removeListener(boundListener);
             _moveController.stop();
@@ -462,7 +469,8 @@ class _OverworldScreenState extends State<OverworldScreen> with TickerProviderSt
     final destNode = widget.state.chapter.getNode(nextEdge.toNodeId);
     if (destNode == null) return;
 
-    final startPos = Offset(currentNode.x * size.width, currentNode.y * size.height);
+    final startPos =
+        Offset(currentNode.x * size.width, currentNode.y * size.height);
     final destPos = Offset(destNode.x * size.width, destNode.y * size.height);
 
     final distanceToEdge = _pointToLineDistance(p, startPos, destPos);
@@ -476,7 +484,8 @@ class _OverworldScreenState extends State<OverworldScreen> with TickerProviderSt
       );
 
       setState(() {
-        _moveAnimation = Tween<Offset>(begin: startOffset, end: destOffset).animate(
+        _moveAnimation =
+            Tween<Offset>(begin: startOffset, end: destOffset).animate(
           CurvedAnimation(
             parent: _moveController,
             curve: Curves.easeInOut,
