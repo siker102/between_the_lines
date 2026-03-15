@@ -2,79 +2,65 @@
   "name": "Level 7",
   "stages": [
     {
-      "width": 6,
-      "height": 13,
+      "width": 7,
+      "height": 8,
       "blockedTiles": [
-        [0, 4],
-        [1, 4],
-        [4, 4],
-        [5, 4],
+        [5, 0],
+        [6, 0],
 
-        [2, 4],
-        [3, 4],
-        [1, 5],
-        [2, 6],
-
-        [2, 7],
-        [3, 7],
-
-        [1, 9],
-        [0, 10],
-        [2, 10],
-        [3, 10]
+        [0, 3],
+        [1, 3],
+        [2, 3],
+        [3, 2],
+        [4, 2],
+        [5, 2],
+        [6, 2]
       ],
       "unstableTiles": [
-        [1, 10],
-        [0, 9]
+        [4, 1],
+        [5, 1]
       ],
-      "pressurePlates": [
+      "teleports": [
         {
-          "position": [1, 6],
-          "key": "door1"
+          "from": [0, 4],
+          "to": [6, 1]
         },
         {
-          "position": [1, 2],
-          "key": "door2"
+          "from": [6, 3],
+          "to": [2, 2]
+        }
+      ],
+
+      "pressurePlates": [
+        {
+          "position": [0, 2],
+          "key": "door1"
         }
       ],
       "pressureObstacles": [
         {
-          "position": [4, 10],
+          "position": [5, 3],
           "key": "door1"
         },
         {
-          "position": [5, 10],
+          "position": [6, 4],
           "key": "door1"
-        },
-        {
-          "position": [0, 4],
-          "key": "door2"
-        },
-        {
-          "position": [1, 4],
-          "key": "door2"
         }
       ],
-      "teleports": [
-        {
-          "from": [3, 6],
-          "to": [4, 3]
-        }
-      ],
+
       "enemies": [
         {
           "id": "e1_s3",
-          "position": [5, 8],
+          "position": [1, 5],
           "patrolPath": [
-            [4, 9],
-            [4, 5]
+            [1, 5],
+            [6, 5]
           ],
-          "visionRange": 6,
+          "visionRange": 3,
           "enemyType": "directional"
         }
       ]
     },
-
     {
       "width": 8,
       "height": 10,
