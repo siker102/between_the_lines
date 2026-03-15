@@ -1,6 +1,7 @@
 import 'package:between_the_lines/model/overworld/character_profile.dart';
 import 'package:between_the_lines/model/overworld/dialogue_data.dart';
 import 'package:between_the_lines/view/overlays/character_display.dart';
+import 'package:between_the_lines/view/utils/utility.dart';
 import 'package:flutter/material.dart';
 
 /// Full-screen visual novel dialogue overlay.
@@ -196,28 +197,32 @@ class _DialogueOverlayState extends State<DialogueOverlay>
 
     return Container(
       width: screenSize.width,
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
+      margin: const EdgeInsets.all(8),
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      decoration: const BoxDecoration(
+        image: DecorationImage(image: AssetImage('images/overworld/page.png'), fit: BoxFit.fill),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           // Speaker name plate
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            decoration: BoxDecoration(
-              color: _speakerColor.withValues(alpha: 0.9),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
-              ),
-            ),
+            padding: const EdgeInsets.only(top: 12, left: 12),
+            // decoration: BoxDecoration(
+            //   color: _speakerColor.withValues(alpha: 0.9),
+            //   borderRadius: const BorderRadius.only(
+            //     topLeft: Radius.circular(12),
+            //     topRight: Radius.circular(12),
+            //   ),
+            // ),
             child: Text(
               speakerName,
               style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
+                color: headingAmberColor,
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
-                decoration: TextDecoration.none,
+                decoration: TextDecoration.underline,
               ),
             ),
           ),
@@ -226,18 +231,18 @@ class _DialogueOverlayState extends State<DialogueOverlay>
           Container(
             width: screenSize.width,
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.85),
-              borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(12),
-                bottomLeft: Radius.circular(12),
-                bottomRight: Radius.circular(12),
-              ),
-              border: Border.all(
-                color: _speakerColor.withValues(alpha: 0.5),
-                width: 1.5,
-              ),
-            ),
+            // decoration: BoxDecoration(
+            //   color: Colors.black.withValues(alpha: 0.85),
+            //   borderRadius: const BorderRadius.only(
+            //     topRight: Radius.circular(12),
+            //     bottomLeft: Radius.circular(12),
+            //     bottomRight: Radius.circular(12),
+            //   ),
+            //   border: Border.all(
+            //     color: _speakerColor.withValues(alpha: 0.5),
+            //     width: 1.5,
+            //   ),
+            // ),
             child: AnimatedBuilder(
               animation: _typewriterController,
               builder: (context, child) {
@@ -247,7 +252,7 @@ class _DialogueOverlayState extends State<DialogueOverlay>
                 return Text(
                   text.substring(0, visibleChars),
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: dialogueAmberColor,
                     fontSize: 18,
                     height: 1.5,
                     decoration: TextDecoration.none,
@@ -273,7 +278,7 @@ class _DialogueOverlayState extends State<DialogueOverlay>
             child: const Text(
               '▼',
               style: TextStyle(
-                color: Colors.white70,
+                color: dialogueAmberColor,
                 fontSize: 16,
                 decoration: TextDecoration.none,
               ),
