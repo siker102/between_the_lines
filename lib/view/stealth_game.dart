@@ -192,14 +192,14 @@ class StealthGame extends FlameGame {
       // Start at the bottom for the very first stage
       final lastRow = stage.height - 1;
       characters = [
-        Character(
-          id: 'c1',
-          position: GridCoordinate(1 - (lastRow / 2).floor(), lastRow),
-        ),
-        Character(
-          id: 'c2',
-          position: GridCoordinate(2 - (lastRow / 2).floor(), lastRow),
-        ),
+        for (var i = 0; i < _level.characterStartX.length; i++)
+          Character(
+            id: 'c${i + 1}',
+            position: GridCoordinate(
+              _level.characterStartX[i] - (lastRow / 2).floor(),
+              lastRow,
+            ),
+          ),
       ];
     } else {
       // Retain positions from previous stage and remap them to the start of the new stage

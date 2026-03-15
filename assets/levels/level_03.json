@@ -1,5 +1,6 @@
 {
   "name": "Level 3",
+  "characterStartX": [1, 2],
   "stages": [
     {
       "width": 7,

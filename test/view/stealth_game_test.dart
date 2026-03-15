@@ -22,6 +22,7 @@ void main() {
     final levelData = LevelData(
       name: 'Test Level',
       stages: [StageData(width: 3, height: 4)],
+      characterStartX: [1, 2],
     );
 
     testWithGame<StealthGame>(
@@ -63,7 +64,7 @@ void main() {
         teleportCoordB: teleportCoordA,
       },
     );
-    final levelData = LevelData(name: 'Teleport Test', stages: [stageData]);
+    final levelData = LevelData(name: 'Teleport Test', stages: [stageData], characterStartX: [1, 2]);
 
     testWithGame<StealthGame>(
       'Teleport does NOT fire when destination is occupied (wait case)',

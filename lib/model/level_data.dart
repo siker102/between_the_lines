@@ -178,15 +178,18 @@ class StageData {
 class LevelData {
   final String name;
   final List<StageData> stages;
+  final List<int> characterStartX;
 
-  LevelData({required this.name, required this.stages});
+  LevelData({required this.name, required this.stages, required this.characterStartX});
 
   factory LevelData.fromJson(Map<String, dynamic> json) {
     final stages = (json['stages'] as List).map((s) => StageData.fromJson(s as Map<String, dynamic>)).toList();
+    final characterStartX = (json['characterStartX'] as List).cast<int>();
 
     return LevelData(
       name: json['name'] as String,
       stages: stages,
+      characterStartX: characterStartX,
     );
   }
 }

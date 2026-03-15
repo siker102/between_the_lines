@@ -1,5 +1,6 @@
 {
   "name": "Level 11",
+  "characterStartX": [1, 2],
   "stages": [
     {
       "width": 6,

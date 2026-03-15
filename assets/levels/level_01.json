@@ -1,5 +1,6 @@
 {
   "name": "Level 1",
+  "characterStartX": [1, 2],
   "stages": [
     {
       "width": 3,
@@ -9,28 +10,61 @@
       "width": 4,
       "height": 7,
       "blockedTiles": [
-        [1, 3],
-        [0, 5],
-        [2, 5]
+        [
+          1,
+          3
+        ],
+        [
+          0,
+          5
+        ],
+        [
+          2,
+          5
+        ]
       ]
     },
     {
       "width": 5,
       "height": 10,
       "blockedTiles": [
-        [0, 4],
-        [1, 3],
-        [2, 5],
-        [4, 8],
-        [4, 9]
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          5
+        ],
+        [
+          4,
+          8
+        ],
+        [
+          4,
+          9
+        ]
       ],
       "enemies": [
         {
           "id": "e1_s3",
-          "position": [2, 3],
+          "position": [
+            2,
+            3
+          ],
           "patrolPath": [
-            [2, 3],
-            [4, 3]
+            [
+              2,
+              3
+            ],
+            [
+              4,
+              3
+            ]
           ],
           "visionRange": 3,
           "enemyType": "linear"
