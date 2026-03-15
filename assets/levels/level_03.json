@@ -6,6 +6,7 @@
       "width": 7,
       "height": 9,
       "blockedTiles": [
+        [2, 0],
         [0, 4],
         [6, 0],
         [0, 2],
