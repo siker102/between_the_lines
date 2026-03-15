@@ -111,8 +111,14 @@ class HexTile extends PositionComponent with HasGameReference {
       case TileType.targetZone:
         fill = _targetPaint;
       case TileType.empty:
-      case TileType.pressurePlate:
         fill = _fillPaint;
+      case TileType.pressurePlate:
+        final sprite = isActive ? _bluePlateActiveSprite : _bluePlateIdleSprite;
+        if (sprite != null) {
+          _renderRotatedSprite(canvas, sprite);
+        } else {
+          fill = _fillPaint;
+        }
       case TileType.unstable:
         if (_brownIdleSprite != null) {
           _renderRotatedSprite(canvas, _brownIdleSprite!);
@@ -144,25 +150,6 @@ class HexTile extends PositionComponent with HasGameReference {
         ..color = blended.withAlpha(128)
         ..style = PaintingStyle.fill;
       canvas.drawPath(path, paint);
-    }
-
-    // Draw inner shapes for teleport/plate
-    if (type == TileType.pressurePlate) {
-      final sprite = isActive ? _bluePlateActiveSprite : _bluePlateIdleSprite;
-      if (sprite != null) {
-        _renderRotatedSprite(canvas, sprite);
-      } else {
-        canvas.drawCircle(
-        Offset(cx, cy),
-        s / 4,
-        pressureKeyColor != null
-            ? (Paint()
-              ..color = pressureKeyColor!
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 2.0)
-            : _pressureBorderPaint,
-      );
-      }
     }
 
     // Border

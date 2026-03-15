@@ -42,7 +42,7 @@ class PatrolPathComponent extends PositionComponent {
       );
 
       final chevronPaint = Paint()
-        ..color = const Color(0x99FFFFFF)
+        ..color = const Color(0xCC333333)
         ..strokeWidth = 2.5
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
@@ -79,7 +79,7 @@ class PatrolPathComponent extends PositionComponent {
     const dashLen = 6.0;
     const gapLen = 4.0;
     final dashPaint = Paint()
-      ..color = const Color(0x66FFFFFF)
+      ..color = const Color(0xBB333333)
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -107,7 +107,7 @@ class PatrolPathComponent extends PositionComponent {
     );
 
     final chevronPaint = Paint()
-      ..color = const Color(0x99FFFFFF)
+      ..color = const Color(0xCC333333)
       ..strokeWidth = 2.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
