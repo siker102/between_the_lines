@@ -1,107 +1,381 @@
 {
   "name": "Level 5",
-  "characterStartX": [1, 2],
+  "characterStartX": [
+    1,
+    4
+  ],
   "stages": [
     {
       "width": 6,
-      "height": 13,
+      "height": 9,
       "blockedTiles": [
         [
           0,
-          4
-        ],
-        [
-          1,
-          4
-        ],
-        [
-          4,
-          4
+          8
         ],
         [
           5,
-          4
-        ],
-        [
-          2,
-          7
-        ],
-        [
-          3,
-          7
-        ]
-      ],
-      "hidingTiles": [
-        [
-          2,
-          10
-        ],
-        [
-          4,
           8
-        ]
-      ],
-      "unstableTiles": [
+        ],
         [
-          4,
-          10
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
         ],
         [
           3,
-          11
-        ]
+          2
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          5,
+          1
+        ],
+        [ 4, 2 ],
+        [ 0, 0 ],
+        [ 5, 0 ]
       ],
-      "pressurePlates": [
-        {
-          "position": [
-            0,
-            10
-          ],
-          "key": "door1"
-        }
-      ],
-      "pressureObstacles": [
-        {
-          "position": [
-            2,
-            9
-          ],
-          "key": "door1"
-        },
-        {
-          "position": [
-            3,
-            9
-          ],
-          "key": "door1"
-        }
-      ],
+      "hidingTiles": [ ],
+      "unstableTiles": [ ],
+      "pressurePlates": [ ],
+      "pressureObstacles": [ ],
       "teleports": [
         {
           "from": [
-            5,
-            11
+            2,
+            8
           ],
           "to": [
             5,
-            5
+            2
           ]
+        },
+        {
+          "from": [
+            3,
+            8
+          ],
+          "to": [
+            0,
+            2
+          ]
+        },
+        {
+          "from": [ 1, 3 ],
+          "to": [ 3, 1 ]
+        },
+        {
+          "from": [ 3, 3 ],
+          "to": [ 2, 1 ]
         }
       ],
       "enemies": [
         {
-          "id": "e1_s1",
+          "id": "left_guard",
           "position": [
-            0,
+            1,
+            5
+          ],
+          "patrolPath": [
+            [
+              1,
+              5
+            ],
+            [
+              2,
+              6
+            ]
+          ],
+          "visionRange": 2,
+          "enemyType": "radial"
+        },
+        {
+          "id": "right_guard",
+          "position": [
+            4,
+            5
+          ],
+          "patrolPath": [
+            [
+              4,
+              5
+            ],
+            [
+              4,
+              6
+            ]
+          ],
+          "visionRange": 2,
+          "enemyType": "radial"
+        }
+      ]
+    },
+    {
+      "width": 7,
+      "height": 9,
+      "blockedTiles": [
+        [
+          3,
+          0
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          0,
+          8
+        ],
+        [ 5, 8 ],
+        [ 0, 4 ],
+        [ 2, 1 ],
+        [ 2, 2 ],
+        [ 6, 0 ],
+        [ 4, 6 ],
+        [ 1, 1 ],
+        [ 0, 0 ],
+        [ 6, 7 ],
+        [ 6, 8 ]
+      ],
+      "pressurePlates": [
+        {
+          "position": [ 3, 2 ],
+          "key": "visionprotect"
+        }, {
+          "position": [ 1, 7 ],
+          "key": "walldown"
+        }
+      ],
+      "pressureObstacles": [
+        {
+          "position": [ 4, 7 ],
+          "key": "visionprotect"
+        },
+        {
+          "position": [ 5, 3 ],
+          "key": "walldown"
+        },
+        {
+          "position": [ 6, 2 ],
+          "key": "walldown"
+        },
+        {
+          "position": [ 5, 5 ],
+          "key": "visionprotect"
+        },
+        {
+          "position": [ 0, 1 ],
+          "key": "visionprotect"
+        }
+      ],
+      "teleports": [
+        {
+          "from": [ 2, 7 ],
+          "to": [ 6, 3 ]
+        },
+        {
+          "from": [ 6, 5 ],
+          "to": [ 0, 2 ]
+        }
+      ],
+      "enemies": [
+        {
+          "id": "radialmid1",
+          "position": [
+            4,
+            5
+          ],
+          "patrolPath": [
+            [
+              4,
+              5
+            ],
+            [
+              2,
+              5
+            ],
+            [
+              5,
+              6
+            ],
+            [
+              2,
+              5
+            ]
+          ],
+          "visionRange": 2,
+          "enemyType": "radial"
+        },
+        {
+          "id": "radialmid1",
+          "position": [
+            1,
+            3
+          ],
+          "patrolPath": [
+            [ 1, 3 ],
+            [ 2, 4 ],
+            [ 1, 5 ],
+            [ 2, 4 ],
+            [ 1, 3 ]
+          ],
+          "visionRange": 2,
+          "enemyType": "radial"
+        }
+      ]
+    },
+    {
+      "width": 8,
+      "height": 9,
+      "blockedTiles": [
+        [
+          0,
+          8
+        ],
+        [
+          3,
+          8
+        ],
+        [ 3, 7 ],
+        [ 3, 6 ],
+        [ 3, 5 ],
+        [ 3, 4 ],
+        [ 3, 3 ],
+        [ 3, 2 ],
+        [ 3, 1 ],
+        [ 3, 0 ],
+        [ 0, 0 ],
+        [ 4, 6 ],
+        [ 4, 2 ],
+        [ 5, 1 ],
+        [ 7, 0 ],
+        [ 6, 8 ]
+      ],
+      "teleports": [
+        {
+          "from": [ 7, 4 ],
+          "to": [ 4, 4 ]
+        },
+        {
+          "from": [ 5, 4 ],
+          "to": [ 7, 1 ]
+        }
+      ],
+      "pressurePlates": [
+        {
+          "position": [ 6, 4 ],
+          "key": "visionexpose2"
+        },
+        {
+          "position": [ 5, 5 ],
+          "key": "visionexpose2"
+        },
+        {
+          "position": [ 1, 1 ],
+          "key": "walldown2"
+        }
+      ],
+      "pressureObstacles": [
+        {
+          "position": [ 1, 5 ],
+          "key": "visionexpose2"
+        },
+        {
+          "position": [ 6, 1 ],
+          "key": "walldown2"
+        }
+      ],
+      "enemies": [
+        {
+          "id": "pressure",
+          "position": [
+            2,
+            1
+          ],
+          "patrolPath": [
+            [
+              2,
+              1
+            ],
+            [
+              2,
+              2
+            ], [
+              2,
+              3
+            ], [
+              2,
+              4
+            ], [
+              2,
+              5
+            ], [
+              2,
+              6
+            ], [
+              2,
+              5
+            ], [
+              2,
+              4
+            ], [
+              2,
+              3
+            ], [
+              2,
+              2
+            ]
+          ],
+          "visionRange": 2,
+          "enemyType": "radial"
+        },
+        {
+          "id": "distractor1",
+          "position": [
+            6,
             6
           ],
           "patrolPath": [
             [
-              0,
+              6,
               6
             ],
             [
               5,
+              5
+            ],
+            [
+              6,
+              4
+            ],
+            [
+              6,
+              5
+            ],
+            [
+              6,
               6
             ]
           ],
@@ -109,7 +383,7 @@
           "enemyType": "directional"
         },
         {
-          "id": "e2_s1",
+          "id": "distractor2",
           "position": [
             5,
             3
@@ -120,152 +394,24 @@
               3
             ],
             [
-              0,
+              5,
+              4
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              6,
+              4
+            ],
+            [
+              5,
               3
             ]
           ],
-          "visionRange": 4,
-          "enemyType": "linear"
-        },
-        {
-          "id": "e3_s1",
-          "position": [
-            2,
-            8
-          ],
-          "patrolPath": [
-            [
-              2,
-              8
-            ],
-            [
-              3,
-              8
-            ]
-          ],
-          "visionRange": 2,
-          "enemyType": "radial"
-        }
-      ]
-    },
-    {
-      "width": 6,
-      "height": 13,
-      "blockedTiles": [
-        [
-          3,
-          0
-        ],
-        [
-          1,
-          3
-        ],
-        [
-          2,
-          3
-        ],
-        [
-          3,
-          3
-        ],
-        [
-          4,
-          3
-        ],
-        [
-          0,
-          8
-        ],
-        [
-          5,
-          8
-        ]
-      ],
-      "enemies": [
-        {
-          "id": "e1_s2",
-          "position": [
-            1,
-            5
-          ],
-          "patrolPath": [
-            [
-              1,
-              5
-            ],
-            [
-              4,
-              5
-            ]
-          ],
           "visionRange": 3,
           "enemyType": "directional"
-        }
-      ]
-    },
-    {
-      "width": 8,
-      "height": 13,
-      "blockedTiles": [
-        [
-          3,
-          12
-        ],
-        [
-          2,
-          5
-        ],
-        [
-          5,
-          5
-        ],
-        [
-          3,
-          8
-        ],
-        [
-          4,
-          8
-        ]
-      ],
-      "enemies": [
-        {
-          "id": "e1_s3",
-          "position": [
-            1,
-            4
-          ],
-          "patrolPath": [
-            [
-              1,
-              4
-            ],
-            [
-              6,
-              4
-            ]
-          ],
-          "visionRange": 3,
-          "enemyType": "directional"
-        },
-        {
-          "id": "e2_s3",
-          "position": [
-            6,
-            9
-          ],
-          "patrolPath": [
-            [
-              6,
-              9
-            ],
-            [
-              1,
-              9
-            ]
-          ],
-          "visionRange": 3,
-          "enemyType": "linear"
         }
       ]
     }

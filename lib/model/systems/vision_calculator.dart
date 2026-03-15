@@ -148,24 +148,41 @@ class VisionCalculator {
   // ── Line of Sight Helpers ──
 
   /// Verifies if a straight line from [start] to [end] is clear of blocks.
+  /// Checks both sides of any hex edge the ray might graze, so walls
+  /// consistently block vision even when the ray runs along an edge.
   static bool _hasLineOfSight(HexGrid grid, GridCoordinate start, GridCoordinate end) {
-    final line = _hexLinedraw(start, end);
-    for (var i = 0; i < line.length; i++) {
-      final pos = line[i];
-      if (!grid.isWithinBounds(pos)) return false;
-      // start tile never blocks its own line of sight
+    final line1 = _hexLinedraw(start, end, epsilonMultiplier: 1.0);
+    final line2 = _hexLinedraw(start, end, epsilonMultiplier: -1.0);
+
+    return !_isLineBlocked(grid, start, line1) &&
+           !_isLineBlocked(grid, start, line2);
+  }
+
+  static bool _isLineBlocked(
+    HexGrid grid,
+    GridCoordinate start,
+    List<GridCoordinate> line,
+  ) {
+    for (final pos in line) {
+      if (!grid.isWithinBounds(pos)) return true;
       if (pos != start) {
         final type = grid.getTileType(pos);
-        if (type == TileType.blocked || type == TileType.pressureObstacle || type == TileType.crumbled) {
-          return false;
+        if (type == TileType.blocked ||
+            type == TileType.pressureObstacle ||
+            type == TileType.crumbled) {
+          return true;
         }
       }
     }
-    return true;
+    return false;
   }
 
   /// Calculates the hexes intersected by a straight line between [a] and [b].
-  static List<GridCoordinate> _hexLinedraw(GridCoordinate a, GridCoordinate b) {
+  static List<GridCoordinate> _hexLinedraw(
+    GridCoordinate a,
+    GridCoordinate b, {
+    double epsilonMultiplier = 1.0,
+  }) {
     final n = _hexDistance(a, b);
     final results = <GridCoordinate>[];
     if (n == 0) {
@@ -175,9 +192,9 @@ class VisionCalculator {
 
     // Add a small epsilon to coordinates to nudge the line
     // This avoids edge/corner ambiguity by consistently picking one side.
-    const epsilonQ = 1e-6;
-    const epsilonR = 1e-6;
-    const epsilonS = -2e-6;
+    final epsilonQ = 1e-6 * epsilonMultiplier;
+    final epsilonR = 1e-6 * epsilonMultiplier;
+    final epsilonS = -2e-6 * epsilonMultiplier;
 
     final aQ = a.q + epsilonQ;
     final aR = a.r + epsilonR;

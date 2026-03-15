@@ -126,5 +126,52 @@ void main() {
       state.updateStatus();
       expect(state.status, GameStatus.lost); // Lost immediately!
     });
+    test('loss condition: enemy advances onto character tile', () {
+      // Place character on the tile the enemy will move to next
+      final patrolEnemy = Enemy(
+        id: 'e1',
+        position: const GridCoordinate(3, 5),
+        patrolPath: [const GridCoordinate(3, 5), const GridCoordinate(4, 5)],
+      );
+      patrolEnemy.initializePath(grid);
+
+      // Character waits on the enemy's next position
+      char1.position = patrolEnemy.nextPosition;
+
+      final state = GameState(
+        grid: grid,
+        characters: [char1],
+        enemies: [patrolEnemy],
+      );
+
+      expect(state.status, GameStatus.playing);
+
+      state.endTurn(); // Enemy advances onto character's tile
+
+      expect(state.status, GameStatus.lost);
+      expect(state.statusMessage, contains('caught'));
+    });
+
+    test('no loss when character is not on enemy next position', () {
+      final patrolEnemy = Enemy(
+        id: 'e1',
+        position: const GridCoordinate(3, 5),
+        patrolPath: [const GridCoordinate(3, 5), const GridCoordinate(4, 5)],
+      );
+      patrolEnemy.initializePath(grid);
+
+      // Character is far away from the enemy's path
+      char1.position = const GridCoordinate(0, 0);
+
+      final state = GameState(
+        grid: grid,
+        characters: [char1],
+        enemies: [patrolEnemy],
+      );
+
+      state.endTurn();
+
+      expect(state.status, GameStatus.playing);
+    });
   });
 }

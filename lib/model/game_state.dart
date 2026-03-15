@@ -65,6 +65,17 @@ class GameState {
       }
     }
 
+    // Check if any enemy occupies the same tile as a character (post-move collision)
+    for (final enemy in enemies) {
+      for (final character in characters) {
+        if (enemy.position == character.position) {
+          status = GameStatus.lost;
+          statusMessage = 'You were caught! An enemy walked right into you.';
+          return;
+        }
+      }
+    }
+
     // Check Win (if ALL characters are in a target zone)
     var allInZone = true;
     for (final character in characters) {
