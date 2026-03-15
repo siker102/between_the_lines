@@ -2,6 +2,8 @@
   "id": "dlg_node_g",
   "lines": [
     { "speakerId": "narrator", "text": "Under the chestnut tree... the old song echoes." },
-    { "speakerId": "c2", "text": "O'Brien's contact is here. Be careful — trust is a luxury." }
+    { "speakerId": "c2", "text": "Your contact actually showed up with the codes in exchange for the diary." },
+    { "speakerId": "c1", "text": "We might actually make it." },
+    { "speakerId": "c2", "text": "Don't get cocky. The worst is yet to come." }
   ]
 }

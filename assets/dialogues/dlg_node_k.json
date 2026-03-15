@@ -2,6 +2,9 @@
   "id": "dlg_node_k",
   "lines": [
     { "speakerId": "narrator", "text": "Room 101. Everyone knows what awaits inside." },
-    { "speakerId": "c1", "text": "This is where they break you. Unless you break them first." }
+    { "speakerId": "c1", "text": "This is where they break you. Unless you break them first." },
+    { "speakerId": "c2", "text": "I'm scared." },
+    { "speakerId": "c1", "text": "Me too. But we're in this together. I trust you." },
+    { "speakerId": "c2", "text": "I trust you too." }
   ]
 }

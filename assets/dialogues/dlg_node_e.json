@@ -2,6 +2,7 @@
   "id": "dlg_node_e",
   "lines": [
     { "speakerId": "narrator", "text": "Rows upon rows of desks. History being rewritten, one page at a time." },
-    { "speakerId": "c1", "text": "If I can alter the right records, they won't even know we exist." }
+    { "speakerId": "c1", "text": "We gotta find my connection. He said he would meet us not far from here." },
+    { "speakerId": "c2", "text": "Then let's find him. We don't have much time." }
   ]
 }

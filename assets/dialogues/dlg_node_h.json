@@ -1,7 +1,8 @@
 ﻿{
   "id": "dlg_node_h",
   "lines": [
-    { "speakerId": "c1", "text": "The passcode... it's split in two. This is the first half." },
-    { "speakerId": "c2", "text": "The second half is inside the Ministry. Of course it is." }
+    { "speakerId": "c1", "text": "The passcode... it is working. Has anyone ever made it this far?" },
+    { "speakerId": "c2", "text": "Even if they did, we would never know." },
+    { "speakerId": "c1", "text": "If they succeeded the world wouldn't be this way." }
   ]
 }

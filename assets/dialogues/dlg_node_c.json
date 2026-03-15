@@ -2,6 +2,8 @@
   "id": "dlg_node_c",
   "lines": [
     { "speakerId": "narrator", "text": "Victory Mansions. The name mocks its crumbling facade." },
-    { "speakerId": "c1", "text": "The diary... it's here. Hidden between the floor and the telescreen's blind spot." }
+    { "speakerId": "c1", "text": "The diary my connection told me about... it's here. Hidden between the floor and the telescreen's blind spot." },
+    { "speakerId": "c2", "text": "Good. Now let's get out of here before the patrols return." },
+    { "speakerId": "c1", "text": "If they catch us with this, it's Room 101 for sure." }
   ]
 }

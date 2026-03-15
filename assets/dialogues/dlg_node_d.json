@@ -1,7 +1,9 @@
 ﻿{
   "id": "dlg_node_d",
   "lines": [
-    { "speakerId": "c2", "text": "The telescreens all come from here. Every eye that watches." },
-    { "speakerId": "c1", "text": "Then maybe we can make a few of them go blind." }
+    { "speakerId": "c2", "text": "Every eye that watches from this point on is our enemy." },
+    { "speakerId": "c1", "text": "This is our last point to turn around... Do you still want to go on?" },
+    { "speakerId": "c2", "text": "I do. Do you?" },
+    { "speakerId": "c1", "text": "I do." }
   ]
 }

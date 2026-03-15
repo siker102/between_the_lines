@@ -2,7 +2,7 @@
   "id": "dlg_node_a",
   "lines": [
     { "speakerId": "narrator", "text": "The rusted bell above the junk shop door clatters..." },
-    { "speakerId": "c1", "text": "This place... it feels different from the rest of the city." },
-    { "speakerId": "c2", "text": "It should. It's one of the last places they don't watch." }
+    { "speakerId": "c1", "text": "This place... can we really bring them salvation?" },
+    { "speakerId": "c2", "text": "We have to. The truth ministries lies cannot be tolerated anymore." }
   ]
 }

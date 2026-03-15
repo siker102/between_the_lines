@@ -107,15 +107,11 @@ class OverworldPainter extends CustomPainter {
             // Compute offset to extend path to the screen edge.
             var t = 0.3;
             if (direction.dx != 0) {
-              final tx = direction.dx > 0
-                  ? firstNode.x / direction.dx
-                  : (firstNode.x - 1.0) / direction.dx;
+              final tx = direction.dx > 0 ? firstNode.x / direction.dx : (firstNode.x - 1.0) / direction.dx;
               t = tx.abs() + 0.05;
             }
             if (direction.dy != 0) {
-              final ty = direction.dy > 0
-                  ? firstNode.y / direction.dy
-                  : (firstNode.y - 1.0) / direction.dy;
+              final ty = direction.dy > 0 ? firstNode.y / direction.dy : (firstNode.y - 1.0) / direction.dy;
               final tCandidate = ty.abs() + 0.05;
               if (direction.dx != 0) {
                 t = t < tCandidate ? t : tCandidate;
