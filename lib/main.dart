@@ -3,6 +3,8 @@ import 'package:between_the_lines/model/overworld/dialogue_data.dart';
 import 'package:between_the_lines/model/overworld/overworld_state.dart';
 import 'package:between_the_lines/model/overworld/story_edge.dart';
 import 'package:between_the_lines/view/overlays/dialogue_overlay.dart';
+import 'package:between_the_lines/view/overlays/title_screen.dart';
+import 'package:between_the_lines/view/overlays/victory_screen.dart';
 import 'package:between_the_lines/view/overworld/overworld_screen.dart';
 import 'package:between_the_lines/view/stealth_game.dart';
 import 'package:between_the_lines/view/utils/utility.dart';
@@ -23,7 +25,7 @@ void main() {
 }
 
 /// Top-level navigation state.
-enum AppScreen { loading, overworld, dialogue, gameplay }
+enum AppScreen { loading, titleScreen, overworld, dialogue, gameplay, victoryScreen }
 
 /// Navigation shell that manages the flow:
 /// Overworld → Dialogue → Gameplay → Dialogue → Overworld → ...
@@ -36,6 +38,7 @@ class GameShell extends StatefulWidget {
 
 class _GameShellState extends State<GameShell> {
   AppScreen _screen = AppScreen.loading;
+  bool _hasShownTitle = false;
 
   // Data
   late OverworldState _overworldState;
@@ -63,6 +66,22 @@ class _GameShellState extends State<GameShell> {
       dialogues: dialogues,
     );
 
+    if (!_hasShownTitle) {
+      setState(() {
+        _hasShownTitle = true;
+        _screen = AppScreen.titleScreen;
+      });
+      return;
+    }
+
+    _proceedAfterTitle();
+  }
+
+  void _onTitleDismissed() {
+    _proceedAfterTitle();
+  }
+
+  void _proceedAfterTitle() {
     // Check if the start node has a dialogue to show first.
     final startNode = _overworldState.currentNode;
     final startDialogue = _overworldState.getDialogue(startNode.dialogueId);
@@ -181,7 +200,9 @@ class _GameShellState extends State<GameShell> {
     _overworldState.completeBossLevel();
     setState(() {
       _currentGame = null;
-      _screen = AppScreen.overworld;
+      _screen = _overworldState.isGameComplete
+          ? AppScreen.victoryScreen
+          : AppScreen.overworld;
     });
   }
 
@@ -206,6 +227,9 @@ class _GameShellState extends State<GameShell> {
             ),
           ),
         );
+
+      case AppScreen.titleScreen:
+        return TitleScreen(onDismissed: _onTitleDismissed);
 
       case AppScreen.overworld:
         return OverworldScreen(
@@ -235,6 +259,9 @@ class _GameShellState extends State<GameShell> {
             },
           ),
         );
+
+      case AppScreen.victoryScreen:
+        return VictoryScreen(totalTurns: _globalTurnCount);
     }
   }
 }

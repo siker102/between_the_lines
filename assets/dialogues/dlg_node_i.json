@@ -2,6 +2,8 @@
   "id": "dlg_node_i",
   "lines": [
     { "speakerId": "narrator", "text": "Minitrue. Where truth goes to die." },
-    { "speakerId": "c1", "text": "The mainframe holds everything. Every erased thought. Every deleted person." }
+    { "speakerId": "c1", "text": "This mainframe holds everything. Every erased thought. Every deleted person." },
+    { "speakerId": "c4", "text": "We have restored the record, Winston." },
+    { "speakerId": "c3", "text": "This is just the first step. Let's not lose momentum." }
   ]
 }
