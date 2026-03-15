@@ -1,5 +1,6 @@
 import 'package:between_the_lines/model/overworld/district_data.dart';
 import 'package:between_the_lines/model/overworld/overworld_state.dart';
+import 'package:between_the_lines/view/utils/utility.dart';
 import 'package:flutter/material.dart';
 
 /// CustomPainter that renders a single district's nodes and edges
@@ -204,6 +205,7 @@ class OverworldPainter extends CustomPainter {
           color: isActive ? Colors.white.withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.5),
           fontSize: 11,
           fontStyle: FontStyle.italic,
+          fontFamily: appFontFamily,
         ),
       ),
       textAlign: TextAlign.center,
@@ -302,6 +304,7 @@ class OverworldPainter extends CustomPainter {
             color: isCurrent || isCompleted ? Colors.white : Colors.white.withValues(alpha: 0.35),
             fontSize: 13,
             fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+            fontFamily: appFontFamily,
           ),
         ),
         textAlign: TextAlign.center,
@@ -321,6 +324,7 @@ class OverworldPainter extends CustomPainter {
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.4),
               fontSize: 10,
+              fontFamily: appFontFamily,
             ),
           ),
           textAlign: TextAlign.center,

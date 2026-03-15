@@ -12,6 +12,7 @@ import 'package:between_the_lines/view/components/hex_tile.dart';
 import 'package:between_the_lines/view/components/level_view_component.dart';
 import 'package:between_the_lines/view/components/patrol_path_component.dart';
 import 'package:between_the_lines/view/utils/hex_math.dart';
+import 'package:between_the_lines/view/utils/utility.dart';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/game.dart';
@@ -90,10 +91,11 @@ class StealthGame extends FlameGame {
       text: _stageLabel,
       position: Vector2(20, 20),
       textRenderer: TextPaint(
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
           fontSize: 24,
           fontWeight: FontWeight.bold,
+          fontFamily: appFontFamily,
         ),
       ),
     );
@@ -104,10 +106,11 @@ class StealthGame extends FlameGame {
       anchor: Anchor.topRight,
       position: Vector2(size.x - 20, 20),
       textRenderer: TextPaint(
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
           fontSize: 24,
           fontWeight: FontWeight.bold,
+          fontFamily: appFontFamily,
         ),
       ),
     );
@@ -118,10 +121,11 @@ class StealthGame extends FlameGame {
       button: TextComponent(
         text: 'DEBUG WIN',
         textRenderer: TextPaint(
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            fontFamily: appFontFamily,
           ),
         ),
       ),
@@ -135,10 +139,11 @@ class StealthGame extends FlameGame {
       button: TextComponent(
         text: 'RESTART',
         textRenderer: TextPaint(
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            fontFamily: appFontFamily,
           ),
         ),
       ),
@@ -152,10 +157,11 @@ class StealthGame extends FlameGame {
       button: TextComponent(
         text: 'END TURN',
         textRenderer: TextPaint(
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            fontFamily: appFontFamily,
           ),
         ),
       ),
@@ -169,10 +175,11 @@ class StealthGame extends FlameGame {
       button: TextComponent(
         text: 'COORDS',
         textRenderer: TextPaint(
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            fontFamily: appFontFamily,
           ),
         ),
       ),

@@ -5,14 +5,19 @@ import 'package:between_the_lines/model/overworld/story_edge.dart';
 import 'package:between_the_lines/view/overlays/dialogue_overlay.dart';
 import 'package:between_the_lines/view/overworld/overworld_screen.dart';
 import 'package:between_the_lines/view/stealth_game.dart';
+import 'package:between_the_lines/view/utils/utility.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
-    const MaterialApp(
+    MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: GameShell(),
+      theme: ThemeData(
+        fontFamily: appFontFamily,
+      ),
+      home: const GameShell(),
     ),
   );
 }
