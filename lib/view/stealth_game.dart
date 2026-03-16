@@ -96,9 +96,8 @@ class StealthGame extends FlameGame {
     _initializeStage();
     _buildInitialWorld();
     _setupUI();
-    FlameAudio.bgm.play('music/district_$_districtTier.wav', volume: 1.0);
-    if (!_musicEnabled) {
-      FlameAudio.bgm.pause();
+    if (_musicEnabled) {
+      FlameAudio.bgm.play('music/district_$_districtTier.wav', volume: 1.0);
     }
   }
 
@@ -132,24 +131,6 @@ class StealthGame extends FlameGame {
     );
     camera.viewport.add(_turnCounter!);
 
-    // Debug Button
-    final debugButton = ButtonComponent(
-      button: TextComponent(
-        text: 'DEBUG WIN',
-        textRenderer: TextPaint(
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            fontFamily: appFontFamily,
-          ),
-        ),
-      ),
-      position: Vector2(20, 60),
-      onPressed: _debugWin,
-    );
-    camera.viewport.add(debugButton);
-
     // Restart Stage Button
     final restartButton = ButtonComponent(
       button: TextComponent(
@@ -157,13 +138,13 @@ class StealthGame extends FlameGame {
         textRenderer: TextPaint(
           style: TextStyle(
             color: Colors.white,
-            fontSize: 16,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
             fontFamily: appFontFamily,
           ),
         ),
       ),
-      position: Vector2(150, 60),
+      position: Vector2(20, 60),
       onPressed: resetCurrentStage,
     );
     camera.viewport.add(restartButton);
@@ -175,39 +156,16 @@ class StealthGame extends FlameGame {
         textRenderer: TextPaint(
           style: TextStyle(
             color: Colors.white,
-            fontSize: 16,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
             fontFamily: appFontFamily,
           ),
         ),
       ),
-      position: Vector2(280, 60),
+      position: Vector2(20, 100),
       onPressed: _endTurnForAll,
     );
     camera.viewport.add(endTurnButton);
-
-    // Coordinate Debug Toggle
-    final coordToggleButton = ButtonComponent(
-      button: TextComponent(
-        text: 'COORDS',
-        textRenderer: TextPaint(
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            fontFamily: appFontFamily,
-          ),
-        ),
-      ),
-      position: Vector2(410, 60),
-      onPressed: () {
-        showCoordinates = !showCoordinates;
-        for (final tile in _tileComponents.values) {
-          tile.showCoordinates = showCoordinates;
-        }
-      },
-    );
-    camera.viewport.add(coordToggleButton);
 
     // Music Toggle
     _musicLabel = TextComponent(
@@ -215,7 +173,7 @@ class StealthGame extends FlameGame {
       textRenderer: TextPaint(
         style: TextStyle(
           color: Colors.white,
-          fontSize: 16,
+          fontSize: 20,
           fontWeight: FontWeight.bold,
           fontFamily: appFontFamily,
         ),
@@ -223,7 +181,7 @@ class StealthGame extends FlameGame {
     );
     final musicButton = ButtonComponent(
       button: _musicLabel,
-      position: Vector2(530, 60),
+      position: Vector2(size.x - 160, size.y - 40),
       onPressed: _toggleMusic,
     );
     camera.viewport.add(musicButton);
@@ -241,10 +199,10 @@ class StealthGame extends FlameGame {
   void _toggleMusic() {
     _musicEnabled = !_musicEnabled;
     if (_musicEnabled) {
-      FlameAudio.bgm.resume();
+      FlameAudio.bgm.play('music/district_$_districtTier.wav', volume: 1.0);
       _musicLabel.text = 'MUSIC: ON';
     } else {
-      FlameAudio.bgm.pause();
+      FlameAudio.bgm.stop();
       _musicLabel.text = 'MUSIC: OFF';
     }
   }
